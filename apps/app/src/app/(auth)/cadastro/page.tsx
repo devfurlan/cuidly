@@ -27,10 +27,14 @@ import {
   FieldSeparator,
 } from '@/components/ui/shadcn/field';
 import { Input } from '@/components/ui/shadcn/input';
+import {
+  TurnstileWidget,
+  type TurnstileWidgetRef,
+} from '@/components/auth/TurnstileWidget';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 
 export default function SignupPage() {
   return (
@@ -64,6 +68,8 @@ function SignupForm() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetRef>(null);
 
   const isSocialLoading = isGoogleLoading || isFacebookLoading;
 
@@ -82,6 +88,8 @@ function SignupForm() {
         'Formato de e-mail inválido',
       'Email rate limit exceeded':
         'Limite de envio de e-mails excedido. Tente novamente mais tarde',
+      'captcha verification process failed':
+        'Erro na verificação de segurança. Tente novamente.',
       'Password is known to be weak and easy to guess, please choose a different one.':
         'Esta senha é conhecida por ser fraca e fácil de adivinhar, por favor escolha outra diferente.',
     };
@@ -199,6 +207,7 @@ function SignupForm() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
+            captchaToken: captchaToken ?? undefined,
           },
         });
 
@@ -214,6 +223,8 @@ function SignupForm() {
         err instanceof Error ? err.message : 'Erro ao criar conta';
       setError(translateError(errorMessage));
       setIsLoading(false);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     }
   };
 
@@ -348,6 +359,12 @@ function SignupForm() {
           )}
         </Field>
 
+        <TurnstileWidget
+          ref={turnstileRef}
+          onSuccess={(token) => setCaptchaToken(token)}
+          onExpire={() => setCaptchaToken(null)}
+          onError={() => setCaptchaToken(null)}
+        />
         <Field>
           <LoadingButton
             size="lg"
@@ -371,6 +388,23 @@ function SignupForm() {
               Fazer login
             </Link>
           </FieldDescription>
+          <p className="mt-4 text-xs text-gray-400">
+            Ao criar sua conta, você concorda com nossos{' '}
+            <Link
+              href="/termos/termos-de-uso"
+              className="text-gray-500 underline underline-offset-4 hover:text-gray-700"
+            >
+              Termos de Uso
+            </Link>{' '}
+            e{' '}
+            <Link
+              href="/termos/politica-de-privacidade"
+              className="text-gray-500 underline underline-offset-4 hover:text-gray-700"
+            >
+              Política de Privacidade
+            </Link>
+            , incluindo o uso de cookies.
+          </p>
         </Field>
       </FieldGroup>
     </form>

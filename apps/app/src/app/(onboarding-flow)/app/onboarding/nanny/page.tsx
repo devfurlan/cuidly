@@ -42,7 +42,7 @@ function NannyOnboardingContent() {
         if (response.ok) {
           const userData = await response.json();
           if (userData.role === 'UNTYPED') {
-            router.push('/app/onboarding/select-type');
+            router.push('/app/onboarding');
             return;
           }
           if (userData.role !== 'NANNY') {

@@ -32,7 +32,6 @@ export function ProfileSetupWidget() {
     return null;
   }
 
-  const accentColor = data.userType === 'nanny' ? 'fuchsia' : 'cyan';
   const pendingCount = data.totalTasks - data.completedTasks;
 
   // Minimized state: small floating button
@@ -45,7 +44,7 @@ export function ProfileSetupWidget() {
             'relative flex size-14 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105',
             data.userType === 'nanny'
               ? 'bg-fuchsia-600 hover:bg-fuchsia-700'
-              : 'bg-cyan-600 hover:bg-cyan-700'
+              : 'bg-amber-500 hover:bg-amber-600'
           )}
           aria-label="Expandir configuração do perfil"
         >

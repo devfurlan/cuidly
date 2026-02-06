@@ -14,7 +14,7 @@ export function ProfileSetupProgress({
   userType,
 }: ProfileSetupProgressProps) {
   const filledSegments = completedSegments;
-  const fillColor = userType === 'nanny' ? 'bg-fuchsia-500' : 'bg-cyan-500';
+  const fillColor = userType === 'nanny' ? 'bg-fuchsia-500' : 'bg-green-500';
 
   return (
     <div className="flex gap-1">

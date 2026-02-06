@@ -39,29 +39,62 @@ function toOptions<
 export type FamilyFormData = Record<string, unknown>;
 
 // ==========================================
+// SEÇÕES DO ONBOARDING DE FAMÍLIA
+// ==========================================
+
+export interface FlowSection {
+  key: string;
+  label: string;
+  description: string;
+  sectionNumber: number;
+}
+
+export const FAMILY_SECTIONS: FlowSection[] = [
+  {
+    key: 'familyProfile',
+    label: 'Sua família',
+    description: 'Vamos começar com algumas informações sobre você e sua família.',
+    sectionNumber: 1,
+  },
+  {
+    key: 'jobCreation',
+    label: 'Hora de criar sua vaga',
+    description:
+      'Agora vamos criar sua primeira vaga! Isso vai ajudar babás a encontrar você.',
+    sectionNumber: 2,
+  },
+];
+
+// ==========================================
 // PERGUNTAS DO ONBOARDING DE FAMÍLIA (17 perguntas)
 // ==========================================
-// Nova ordem:
+// Seção 1 — Sua família (Q1-Q8):
 // 1. Nome completo
 // 2. CPF
 // 3. Data de nascimento
 // 4. Gênero
-// 5. Informações sobre as crianças (novo componente)
+// 5. Informações sobre as crianças
 // 6. CEP (onde será o cuidado)
-// 7. Disponibilidade (dias + turnos) - novo componente
-// 8. Tipo de babá
-// 9. Regime de contratação
-// 10. Ajuda doméstica
-// 11. Pets (+ descrição condicional)
-// 12. Requisitos obrigatórios (não fumante, CNH)
-// 13. Valor por hora
-// 14. Foto da família (opcional)
-// 15. Apresentação da família (IA)
-// 16. Descrição da vaga (IA)
+// 7. Foto da família (opcional)
+// 8. Apresentação da família (IA, opcional)
+//
+// Seção 2 — Criando sua vaga (Q9-Q17):
+// 9. Disponibilidade (dias + turnos)
+// 10. Tipo de babá
+// 11. Regime de contratação
+// 12. Ajuda doméstica
+// 13. Pets (+ tipos condicional)
+// 14. Requisitos obrigatórios
+// 15. Valor por hora
+// 16. Descrição da vaga (IA, opcional)
 // 17. Fotos da vaga (opcional)
 // ==========================================
 
 export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
+  // ============================
+  // SEÇÃO 1: Sua família (Q1-Q8)
+  // ============================
+
   // Q1: Nome completo
   {
     id: 'responsibleName',
@@ -72,6 +105,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     placeholder: 'João da Silva',
     required: true,
     validation: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+    section: 'familyProfile',
   },
   // Q2: CPF
   {
@@ -86,6 +120,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     mask: maskCPF,
     maxLength: 14,
     validation: cpfValidator,
+    section: 'familyProfile',
   },
   // Q3: Data de nascimento
   {
@@ -99,6 +134,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     mask: maskDate,
     maxLength: 10,
     validation: birthDateValidator,
+    section: 'familyProfile',
   },
   // Q4: Gênero
   {
@@ -110,8 +146,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     required: true,
     options: toOptions(RESPONSIBLE_GENDER_OPTIONS),
     validation: z.string().min(1, 'Selecione o gênero'),
+    section: 'familyProfile',
   },
-  // Q5: Informações sobre as crianças (novo componente)
+  // Q5: Informações sobre as crianças
   {
     id: 'children',
     field: 'children',
@@ -121,6 +158,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
       'Adicione as crianças que a babá irá cuidar. Você pode incluir mais de uma.',
     required: true,
     validation: childrenListSchema,
+    section: 'familyProfile',
   },
   // Q6: Endereço completo
   {
@@ -130,8 +168,38 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     title: 'Onde será o cuidado?',
     subtitle: 'Informe o endereço onde a babá irá cuidar das crianças.',
     required: true,
+    section: 'familyProfile',
   },
-  // Q7: Disponibilidade (dias + turnos) - novo componente
+  // Q7: Foto de perfil da família (opcional)
+  {
+    id: 'familyPhoto',
+    field: 'familyPhoto',
+    type: 'photo',
+    title: 'Que tal uma foto para o seu perfil?',
+    subtitle: 'Perfis com foto geram mais confiança e recebem mais propostas.',
+    required: false,
+    section: 'familyProfile',
+  },
+  // Q8: Apresentação da família (texto gerado por IA automaticamente)
+  {
+    id: 'familyPresentation',
+    field: 'familyPresentation',
+    type: 'ai-generated-text',
+    title: 'Vamos criar uma apresentação para sua família?',
+    subtitle:
+      'Nossa IA vai gerar um texto simpático para você. Você pode editar depois.',
+    placeholder: 'Clique para gerar uma apresentação da sua família',
+    required: false,
+    maxLength: 1000,
+    generateEndpoint: '/api/families/generate-presentation',
+    section: 'familyProfile',
+  },
+
+  // ====================================
+  // SEÇÃO 2: Criando sua vaga (Q9-Q17)
+  // ====================================
+
+  // Q9: Disponibilidade (dias + turnos)
   {
     id: 'availability',
     field: 'availability',
@@ -140,8 +208,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     subtitle: 'Selecione os dias e períodos em que precisa de ajuda.',
     required: true,
     validation: availabilitySchema,
+    section: 'jobCreation',
   },
-  // Q8: Tipo de babá
+  // Q10: Tipo de babá
   {
     id: 'nannyType',
     field: 'nannyType',
@@ -151,8 +220,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     required: true,
     options: toOptions(FAMILY_NANNY_TYPE_OPTIONS),
     validation: z.string().min(1, 'Selecione o tipo de babá'),
+    section: 'jobCreation',
   },
-  // Q9: Regime de contratação
+  // Q11: Regime de contratação
   {
     id: 'contractRegime',
     field: 'contractRegime',
@@ -162,8 +232,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     required: true,
     options: toOptions(FAMILY_CONTRACT_REGIME_OPTIONS),
     validation: z.string().min(1, 'Selecione o regime de contratação'),
+    section: 'jobCreation',
   },
-  // Q10: Ajuda doméstica
+  // Q12: Ajuda doméstica
   {
     id: 'domesticHelp',
     field: 'domesticHelp',
@@ -172,8 +243,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     subtitle: 'Selecione as tarefas que a babá também realizaria.',
     required: false,
     options: toOptions(DOMESTIC_HELP_OPTIONS),
+    section: 'jobCreation',
   },
-  // Q11: Pets
+  // Q13: Pets
   {
     id: 'hasPets',
     field: 'hasPets',
@@ -186,8 +258,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
       { value: 'false', label: 'Não' },
     ],
     validation: z.string().min(1, 'Selecione uma opção'),
+    section: 'jobCreation',
   },
-  // Q11b: Tipos de pets (condicional)
+  // Q13b: Tipos de pets (condicional)
   {
     id: 'petTypes',
     field: 'petTypes',
@@ -200,8 +273,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
       { value: 'OTHER', label: 'Outros' },
     ],
     showIf: (data) => data.hasPets === 'true',
+    section: 'jobCreation',
   },
-  // Q12: Requisitos obrigatórios
+  // Q14: Requisitos obrigatórios
   {
     id: 'mandatoryRequirements',
     field: 'mandatoryRequirements',
@@ -210,8 +284,9 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     subtitle: 'Marque apenas o que for realmente necessário.',
     required: false,
     options: toOptions(MANDATORY_REQUIREMENTS_OPTIONS),
+    section: 'jobCreation',
   },
-  // Q13: Valor por hora
+  // Q15: Valor por hora
   {
     id: 'hourlyRateRange',
     field: 'hourlyRateRange',
@@ -226,28 +301,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
       title: 'Valor médio para esse tipo de vaga na sua região: R$ 36–45/h',
       description: 'Use como referência. O valor final pode variar.',
     },
-  },
-  // Q14: Foto de perfil da família (opcional)
-  {
-    id: 'familyPhoto',
-    field: 'familyPhoto',
-    type: 'photo',
-    title: 'Que tal uma foto para o seu perfil?',
-    subtitle: 'Perfis com foto geram mais confiança e recebem mais propostas.',
-    required: false,
-  },
-  // Q15: Apresentação da família (texto gerado por IA automaticamente)
-  {
-    id: 'familyPresentation',
-    field: 'familyPresentation',
-    type: 'ai-generated-text',
-    title: 'Vamos criar uma apresentação para sua família?',
-    subtitle:
-      'Nossa IA vai gerar um texto simpático para você. Você pode editar depois.',
-    placeholder: 'Clique para gerar uma apresentação da sua família',
-    required: false,
-    maxLength: 1000,
-    generateEndpoint: '/api/families/generate-presentation',
+    section: 'jobCreation',
   },
   // Q16: Descrição da vaga (texto gerado por IA automaticamente)
   {
@@ -261,6 +315,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     required: false,
     maxLength: 2000,
     generateEndpoint: '/api/families/generate-job-description',
+    section: 'jobCreation',
   },
   // Q17: Fotos da vaga (upload múltiplo, opcional)
   {
@@ -270,6 +325,7 @@ export const FAMILY_ALL_QUESTIONS: FlowQuestion[] = [
     title: 'Quer adicionar fotos para a vaga?',
     subtitle: 'Fotos do ambiente ajudam as babás a entender melhor a rotina.',
     required: false,
+    section: 'jobCreation',
   },
 ];
 
@@ -386,4 +442,41 @@ export function getQuestionIndex(
   const visibleQuestions = getVisibleQuestions(formData);
   const index = visibleQuestions.findIndex((q) => q.id === questionId);
   return index >= 0 ? index + 1 : -1;
+}
+
+// ==========================================
+// Helpers para seções
+// ==========================================
+
+/**
+ * Retorna a seção da pergunta visível no índice q (1-based)
+ */
+export function getSectionForQuestion(
+  q: number,
+  formData: FamilyFormData,
+): FlowSection | null {
+  const question = getQuestion(q, formData);
+  if (!question?.section) return null;
+  return FAMILY_SECTIONS.find((s) => s.key === question.section) ?? null;
+}
+
+/**
+ * Retorna true se a pergunta no índice q é a PRIMEIRA da sua seção
+ * entre as perguntas visíveis. Usado para exibir o interstitial.
+ */
+export function isFirstQuestionInSection(
+  q: number,
+  formData: FamilyFormData,
+): boolean {
+  const visibleQuestions = getVisibleQuestions(formData);
+  if (q < 1 || q > visibleQuestions.length) return false;
+
+  const currentQuestion = visibleQuestions[q - 1];
+  if (!currentQuestion.section) return false;
+
+  // First question is always first in its section
+  if (q === 1) return true;
+
+  const prevQuestion = visibleQuestions[q - 2];
+  return prevQuestion.section !== currentQuestion.section;
 }

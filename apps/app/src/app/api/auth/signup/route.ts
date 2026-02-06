@@ -15,7 +15,7 @@ import { createFreeSubscription } from '@/services/subscription/subscription-ser
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { authId, email, type, name } = body;
+    const { authId, email, type, name, emailVerified } = body;
 
     // Validate required fields
     if (!authId || !email || !type) {
@@ -42,26 +42,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Dissociate any DELETED records from the other type
+    // (e.g., was a Nanny, deleted, now re-registering as Family)
+    if (type === 'NANNY') {
+      const deletedFamily = await prisma.family.findUnique({ where: { authId } });
+      if (deletedFamily?.status === 'DELETED') {
+        await prisma.family.update({ where: { id: deletedFamily.id }, data: { authId: null } });
+      }
+    } else {
+      const deletedNanny = await prisma.nanny.findUnique({ where: { authId } });
+      if (deletedNanny?.status === 'DELETED') {
+        await prisma.nanny.update({ where: { id: deletedNanny.id }, data: { authId: null } });
+      }
+    }
+
     // Check if already exists
     if (type === 'NANNY') {
       const existingNanny = await prisma.nanny.findUnique({
         where: { authId },
       });
       if (existingNanny) {
-        return NextResponse.json(
-          { message: 'Usuário já existe', id: existingNanny.id, type: 'nanny' },
-          { status: 200 }
-        );
+        if (existingNanny.status === 'DELETED') {
+          // Dissociate deleted record to allow re-registration
+          await prisma.nanny.update({ where: { id: existingNanny.id }, data: { authId: null } });
+        } else {
+          return NextResponse.json(
+            { message: 'Usuário já existe', id: existingNanny.id, type: 'nanny' },
+            { status: 200 }
+          );
+        }
       }
     } else {
       const existingFamily = await prisma.family.findUnique({
         where: { authId },
       });
       if (existingFamily) {
-        return NextResponse.json(
-          { message: 'Usuário já existe', id: existingFamily.id, type: 'family' },
-          { status: 200 }
-        );
+        if (existingFamily.status === 'DELETED') {
+          // Dissociate deleted record to allow re-registration
+          await prisma.family.update({ where: { id: existingFamily.id }, data: { authId: null } });
+        } else {
+          return NextResponse.json(
+            { message: 'Usuário já existe', id: existingFamily.id, type: 'family' },
+            { status: 200 }
+          );
+        }
       }
     }
 
@@ -73,6 +97,7 @@ export async function POST(request: NextRequest) {
           emailAddress: email,
           name: name || null,
           status: 'PENDING',
+          emailVerified: !!emailVerified,
         },
       });
 
@@ -91,6 +116,7 @@ export async function POST(request: NextRequest) {
           emailAddress: email,
           name: name || 'Família',
           status: 'PENDING',
+          emailVerified: !!emailVerified,
         },
       });
 

@@ -4,6 +4,7 @@
  */
 
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
+import { GTMPageContext } from '@/components/GTMPageContext';
 import { ProfileSetupWidget } from '@/components/profile-setup-widget';
 import { getCurrentUserOrUntyped } from '@/lib/auth/getCurrentUser';
 import { redirect } from 'next/navigation';
@@ -46,7 +47,9 @@ export default async function AppLayout({
   };
 
   return (
-    <DashboardLayout
+    <>
+      <GTMPageContext pageType="dashboard" showCookieConsent={false} />
+      <DashboardLayout
       role={userData.role}
       userName={userData.name}
       userEmail={userData.email}
@@ -58,5 +61,6 @@ export default async function AppLayout({
       {children}
       <ProfileSetupWidget />
     </DashboardLayout>
+    </>
   );
 }

@@ -22,6 +22,7 @@ export interface FlowQuestion {
   defaultValue?: unknown;
   generateEndpoint?: string; // For AI-generated text questions
   hint?: { title: string; description?: string }; // Optional hint/tip shown above options
+  section?: string; // Section key for visual grouping (e.g. 'familyProfile', 'jobCreation')
 }
 
 export interface FlowStepConfig {

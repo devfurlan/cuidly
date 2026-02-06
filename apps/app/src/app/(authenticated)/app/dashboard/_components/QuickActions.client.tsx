@@ -50,7 +50,7 @@ export function QuickActions({ userType }: QuickActionsProps) {
               <PiUser className="size-5 text-fuchsia-600" />
             </div>
             <div className="text-left">
-              <p className="font-medium">Explorar Babás</p>
+              <p className="font-medium">Encontrar Babás</p>
               <p className="text-xs text-gray-500">
                 Encontre babás na sua região
               </p>

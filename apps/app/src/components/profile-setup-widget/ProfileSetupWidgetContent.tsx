@@ -3,6 +3,7 @@
 import { cn } from '@cuidly/shared';
 import { PiX, PiMinus } from 'react-icons/pi';
 import { Card, CardContent, CardHeader } from '@/components/ui/shadcn/card';
+import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 import { ProfileSetupProgress } from './ProfileSetupProgress';
 import { ProfileSetupTaskItem } from './ProfileSetupTaskItem';
 import { NANNY_TASK_CONFIGS } from './nanny-tasks';
@@ -21,7 +22,6 @@ export function ProfileSetupWidgetContent({
   onDismiss,
 }: ProfileSetupWidgetContentProps) {
   const taskConfigs = data.userType === 'nanny' ? NANNY_TASK_CONFIGS : FAMILY_TASK_CONFIGS;
-  const accentColor = data.userType === 'nanny' ? 'fuchsia' : 'cyan';
 
   // Enrich tasks with href from configs
   const enrichedTasks: ProfileTask[] = data.tasks.map((task) => ({
@@ -29,17 +29,25 @@ export function ProfileSetupWidgetContent({
     href: taskConfigs[task.id]?.href,
   }));
 
+  // Sort tasks: pending first, then locked, then completed
+  const sortedTasks = [...enrichedTasks].sort((a, b) => {
+    const order: Record<string, number> = { pending: 0, locked: 1, completed: 2 };
+    return (order[a.status] ?? 1) - (order[b.status] ?? 1);
+  });
+
   return (
     <Card className="w-80 shadow-xl border-0 bg-white">
       <CardHeader className="pb-3 pt-4 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900">Selo Identificada</h3>
+            <h3 className="font-semibold text-gray-900">
+              {data.userType === 'nanny' ? 'Selo Identificada' : 'Primeiros passos'}
+            </h3>
             {data.hasProSubscription && (
               <span
                 className={cn(
                   'text-xs font-semibold px-2 py-0.5 rounded-full text-white',
-                  data.userType === 'nanny' ? 'bg-fuchsia-500' : 'bg-cyan-500'
+                  data.userType === 'nanny' ? 'bg-fuchsia-500' : 'bg-amber-500'
                 )}
               >
                 PRO
@@ -84,15 +92,17 @@ export function ProfileSetupWidgetContent({
         </div>
 
         {/* Task list */}
-        <div className="space-y-1 max-h-64 overflow-y-auto">
-          {enrichedTasks.map((task) => (
-            <ProfileSetupTaskItem
-              key={task.id}
-              task={task}
-              userType={data.userType}
-            />
-          ))}
-        </div>
+        <ScrollArea className="h-64">
+          <div className="space-y-1 pr-3">
+            {sortedTasks.map((task) => (
+              <ProfileSetupTaskItem
+                key={task.id}
+                task={task}
+                userType={data.userType}
+              />
+            ))}
+          </div>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

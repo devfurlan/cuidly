@@ -36,14 +36,14 @@ export async function getCurrentUser(): Promise<CurrentUser> {
     where: { authId: user.id },
     include: { subscription: true },
   });
-  if (nanny) return { type: 'nanny', nanny, authId: user.id };
+  if (nanny && nanny.status !== 'DELETED') return { type: 'nanny', nanny, authId: user.id };
 
   // Try to find as Family
   const family = await prisma.family.findUnique({
     where: { authId: user.id },
     include: { subscription: true },
   });
-  if (family) return { type: 'family', family, authId: user.id };
+  if (family && family.status !== 'DELETED') return { type: 'family', family, authId: user.id };
 
   return null;
 }
@@ -66,14 +66,14 @@ export async function getCurrentUserOrUntyped(): Promise<CurrentUserOrUntyped> {
     where: { authId: user.id },
     include: { subscription: true },
   });
-  if (nanny) return { type: 'nanny', nanny, authId: user.id };
+  if (nanny && nanny.status !== 'DELETED') return { type: 'nanny', nanny, authId: user.id };
 
   // Try to find as Family
   const family = await prisma.family.findUnique({
     where: { authId: user.id },
     include: { subscription: true },
   });
-  if (family) return { type: 'family', family, authId: user.id };
+  if (family && family.status !== 'DELETED') return { type: 'family', family, authId: user.id };
 
   // Authenticated but no record yet
   return { type: 'untyped', authId: user.id };

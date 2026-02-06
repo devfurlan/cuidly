@@ -1,5 +1,6 @@
 'use client';
 
+import { trackFamilyRegistration } from '@/lib/gtm-events';
 import { secureStorage } from '@/lib/onboarding-storage';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -55,6 +56,8 @@ export default function FamilyOnboardingCompletePage() {
           // Clear secure storage data
           secureStorage.removeItem(STORAGE_KEY);
           clearChildStorageKeys();
+
+          trackFamilyRegistration();
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('Error completing onboarding:', errorData);

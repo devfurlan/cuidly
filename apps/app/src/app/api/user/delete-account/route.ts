@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 import prisma from '@/lib/prisma';
-import { createClient } from '@/utils/supabase/server';
+import { createClient, createAdminClient } from '@/utils/supabase/server';
 
 /**
  * DELETE /api/user/delete-account
@@ -24,6 +24,7 @@ export async function DELETE() {
         where: { id: currentUser.nanny.id },
         data: {
           status: 'DELETED',
+          authId: null,
           // Clear sensitive data
           emailAddress: null,
           phoneNumber: '',
@@ -51,6 +52,7 @@ export async function DELETE() {
         where: { id: currentUser.family.id },
         data: {
           status: 'DELETED',
+          authId: null,
           // Clear sensitive data
           emailAddress: null,
           phoneNumber: '',
@@ -77,7 +79,7 @@ export async function DELETE() {
       await prisma.job.updateMany({
         where: {
           familyId: currentUser.family.id,
-          status: { in: ['OPEN', 'PAUSED'] },
+          status: { in: ['ACTIVE', 'PAUSED'] },
         },
         data: {
           status: 'CLOSED',
@@ -85,8 +87,15 @@ export async function DELETE() {
       });
     }
 
-    // Sign out from Supabase (optional - user will be redirected anyway)
-    await supabase.auth.signOut();
+    // Delete Supabase Auth user to allow clean re-registration
+    try {
+      const adminClient = createAdminClient();
+      await adminClient.auth.admin.deleteUser(currentUser.authId);
+    } catch (adminError) {
+      console.error('Failed to delete Supabase Auth user:', adminError);
+      // Fallback: sign out only
+      await supabase.auth.signOut();
+    }
 
     return NextResponse.json({
       success: true,

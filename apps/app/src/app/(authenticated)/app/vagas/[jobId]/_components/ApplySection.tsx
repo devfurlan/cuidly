@@ -1,5 +1,6 @@
 'use client';
 
+import { trackApplicationSent } from '@/lib/gtm-events';
 import { useState } from 'react';
 import {
   PiCheckCircle,
@@ -81,6 +82,7 @@ export function ApplySection({
       setShowApplyForm(false);
       setApplyMessage('');
       setApplicationSuccess(true);
+      trackApplicationSent(jobId);
       onApplicationSuccess(newApplication, data.matchResult);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {

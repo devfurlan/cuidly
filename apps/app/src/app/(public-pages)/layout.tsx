@@ -1,3 +1,4 @@
+import { CookieConsentBanner } from '@/components/cookie-consent/CookieConsentBanner';
 import { GTMPageContext } from '@/components/GTMPageContext';
 import type { Metadata } from 'next';
 
@@ -27,6 +28,7 @@ export default function RootLayout({
     <div className="flex min-h-screen flex-col">
       <GTMPageContext pageType="public" showCookieConsent={true} />
       {children}
+      <CookieConsentBanner />
     </div>
   );
 }

@@ -2,14 +2,22 @@
 
 import { PiCheckCircle } from 'react-icons/pi';
 
+import { trackSubscriptionCreated } from '@/lib/gtm-events';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/shadcn/button';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 
 function SubscriptionSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const plan = searchParams.get('plan');
+  const hasTracked = useRef(false);
+
+  useEffect(() => {
+    if (hasTracked.current) return;
+    hasTracked.current = true;
+    trackSubscriptionCreated(plan || 'unknown');
+  }, [plan]);
 
   const planNames: Record<string, string> = {
     FAMILY_MONTHLY: 'Família Mensal',

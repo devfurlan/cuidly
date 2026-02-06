@@ -2,6 +2,7 @@
 
 import { PiBaby, PiBriefcase, PiCalendar, PiCurrencyDollar, PiShieldCheck, PiWarningCircle } from 'react-icons/pi';
 
+import { trackJobCreated } from '@/lib/gtm-events';
 import { Button } from '@/components/ui/shadcn/button';
 import { Card } from '@/components/ui/shadcn/card';
 import { Checkbox } from '@/components/ui/shadcn/checkbox';
@@ -300,6 +301,8 @@ export default function CreateJobPage() {
         }
         throw new Error(result.error || 'Erro ao criar vaga');
       }
+
+      trackJobCreated(result.job.id);
 
       // Redirect to job details page
       router.push(`/app/vagas/${result.job.id}`);

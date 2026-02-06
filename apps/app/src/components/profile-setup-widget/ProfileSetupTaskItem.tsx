@@ -52,21 +52,16 @@ interface ProfileSetupTaskItemProps {
 
 export function ProfileSetupTaskItem({ task, userType }: ProfileSetupTaskItemProps) {
   const Icon = TASK_ICONS[task.id] || PiUser;
-  const accentColor = userType === 'nanny' ? 'fuchsia' : 'cyan';
-
-  const iconBgClass = cn({
-    'bg-green-100 text-green-600': task.status === 'completed',
-    'bg-gray-100 text-gray-400': task.status === 'locked',
-    [`bg-${accentColor}-100 text-${accentColor}-600`]: task.status === 'pending',
-  });
 
   // Using explicit classes for Tailwind to detect them
   const pendingIconBg = userType === 'nanny'
     ? 'bg-fuchsia-100 text-fuchsia-600'
-    : 'bg-cyan-100 text-cyan-600';
+    : 'bg-amber-100 text-amber-600';
 
-  return (
-    <div className="flex items-center gap-3 py-2">
+  const isClickable = task.status === 'pending' && task.href;
+
+  const content = (
+    <>
       <div
         className={cn(
           'flex size-8 shrink-0 items-center justify-center rounded-full',
@@ -96,19 +91,29 @@ export function ProfileSetupTaskItem({ task, userType }: ProfileSetupTaskItemPro
         <PiCheckCircle className="size-5 shrink-0 text-green-500" />
       ) : task.status === 'locked' ? (
         <PiLock className="size-5 shrink-0 text-gray-400" />
-      ) : task.href ? (
-        <Link
-          href={task.href}
-          className={cn(
-            'flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
-            userType === 'nanny'
-              ? 'hover:bg-fuchsia-100 text-fuchsia-600'
-              : 'hover:bg-cyan-100 text-cyan-600'
-          )}
-        >
-          <PiArrowRight className="size-4" />
-        </Link>
+      ) : isClickable ? (
+        <PiArrowRight className={cn(
+          'size-4 shrink-0',
+          userType === 'nanny' ? 'text-fuchsia-600' : 'text-amber-600'
+        )} />
       ) : null}
+    </>
+  );
+
+  if (isClickable) {
+    return (
+      <Link
+        href={task.href!}
+        className="flex items-center gap-3 rounded-lg py-2 px-1 -mx-1 transition-colors hover:bg-gray-50"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 py-2">
+      {content}
     </div>
   );
 }

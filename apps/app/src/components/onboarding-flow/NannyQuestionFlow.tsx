@@ -18,6 +18,7 @@ import { createClient } from '@/utils/supabase/client';
 
 import { FlowNavigation } from './FlowNavigation';
 import { FlowProgress } from './FlowProgress';
+import { useOnboardingBack } from './OnboardingBackContext';
 import { FlowTransition } from './FlowTransition';
 import { QuestionCard } from './QuestionCard';
 import { QuestionRenderer } from './questions/QuestionRenderer';
@@ -37,6 +38,7 @@ export function NannyQuestionFlow({
 }: NannyQuestionFlowProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { setOnBack } = useOnboardingBack();
 
   // State
   const [formData, setFormData] = useState<NannyFormData>({});
@@ -262,7 +264,7 @@ export function NannyQuestionFlow({
 
   // Navigate to URL
   const navigateTo = useCallback(
-    (dest: { q: number; qc?: number } | 'complete' | 'exit') => {
+    async (dest: { q: number; qc?: number } | 'complete' | 'exit') => {
       if (dest === 'complete') {
         // Clear storage and go to complete page
         secureStorage.removeItem(STORAGE_KEY);
@@ -270,7 +272,16 @@ export function NannyQuestionFlow({
         secureStorage.removeItem(GENERATED_MINI_BIO_KEY);
         router.push('/app/onboarding/nanny/complete');
       } else if (dest === 'exit') {
-        router.push('/app/onboarding/nanny');
+        // Go back to type selection — delete current record so user can re-choose
+        try {
+          await fetch('/api/auth/switch-type', { method: 'POST' });
+        } catch {
+          // If API fails, still try to navigate
+        }
+        secureStorage.removeItem(STORAGE_KEY);
+        secureStorage.removeItem(GENERATED_BIO_KEY);
+        secureStorage.removeItem(GENERATED_MINI_BIO_KEY);
+        router.push('/app/onboarding');
       } else {
         const url = dest.qc
           ? `/app/onboarding/nanny?q=${dest.q}&qc=${dest.qc}`
@@ -398,6 +409,12 @@ export function NannyQuestionFlow({
 
     navigateTo(prev);
   }, [questionIndex, conditionalIndex, navigateTo]);
+
+  // Register back handler in header
+  useEffect(() => {
+    setOnBack(handleBack);
+    return () => setOnBack(null);
+  }, [handleBack, setOnBack]);
 
   // Handle photo change
   const handlePhotoChange = useCallback(

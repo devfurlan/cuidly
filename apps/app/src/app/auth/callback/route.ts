@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         where: { authId },
       });
 
-      if (nanny) {
+      if (nanny && nanny.status !== 'DELETED') {
         if (nanny.onboardingCompleted) {
           return NextResponse.redirect(`${origin}/app`);
         }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         where: { authId },
       });
 
-      if (family) {
+      if (family && family.status !== 'DELETED') {
         if (family.onboardingCompleted) {
           return NextResponse.redirect(`${origin}/app`);
         }

@@ -6,11 +6,14 @@ import { z } from 'zod';
 
 import {
   calculateProgress,
+  FAMILY_SECTIONS,
   FamilyFormData,
   findResumePoint,
   getNextDestination,
   getPrevDestination,
   getQuestion,
+  getSectionForQuestion,
+  isFirstQuestionInSection,
 } from '@/lib/onboarding-flow/family-questions';
 import { secureStorage } from '@/lib/onboarding-storage';
 import { createClient } from '@/utils/supabase/client';
@@ -18,7 +21,9 @@ import { createClient } from '@/utils/supabase/client';
 import { FlowNavigation } from './FlowNavigation';
 import { FlowProgress } from './FlowProgress';
 import { FlowTransition } from './FlowTransition';
+import { useOnboardingBack } from './OnboardingBackContext';
 import { QuestionCard } from './QuestionCard';
+import { SectionInterstitial } from './SectionInterstitial';
 import { QuestionRenderer } from './questions/QuestionRenderer';
 
 const STORAGE_KEY = 'family-onboarding-data';
@@ -30,6 +35,7 @@ interface FamilyQuestionFlowProps {
 export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
   const router = useRouter();
   const supabase = createClient();
+  const { setOnBack } = useOnboardingBack();
 
   // State
   const [formData, setFormData] = useState<FamilyFormData>({});
@@ -38,6 +44,7 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [showInterstitial, setShowInterstitial] = useState(false);
 
   // Keep a ref to the latest formData for synchronous access
   const formDataRef = useRef(formData);
@@ -50,6 +57,9 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
 
   // Calculate progress
   const progress = calculateProgress(questionIndex, formData);
+
+  // Get current section
+  const currentSection = getSectionForQuestion(questionIndex, formData);
 
   // Load saved data on mount
   useEffect(() => {
@@ -195,12 +205,19 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
 
   // Navigate to URL
   const navigateTo = useCallback(
-    (dest: { q: number } | 'complete' | 'exit') => {
+    async (dest: { q: number } | 'complete' | 'exit') => {
       if (dest === 'complete') {
         // Save to API before completing
         saveToApiAndComplete();
       } else if (dest === 'exit') {
-        router.push('/app/onboarding/family');
+        // Go back to type selection — delete current record so user can re-choose
+        try {
+          await fetch('/api/auth/switch-type', { method: 'POST' });
+        } catch {
+          // If API fails, still try to navigate
+        }
+        secureStorage.removeItem(STORAGE_KEY);
+        router.push('/app/onboarding');
       } else {
         router.push(`/app/onboarding/family?q=${dest.q}`);
       }
@@ -306,6 +323,14 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
       return;
     }
 
+    // Check if entering a new section (forward only, skip section 1)
+    if (isFirstQuestionInSection(next.q, formDataRef.current)) {
+      const nextSection = getSectionForQuestion(next.q, formDataRef.current);
+      if (nextSection && nextSection.sectionNumber > 1) {
+        setShowInterstitial(true);
+      }
+    }
+
     navigateTo(next);
   }, [validateCurrentQuestion, questionIndex, navigateTo, question, validateCpfUniqueness]);
 
@@ -313,10 +338,17 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
   const handleBack = useCallback(() => {
     setDirection('backward');
     setError(null);
+    setShowInterstitial(false);
 
     const prev = getPrevDestination(questionIndex, formDataRef.current);
     navigateTo(prev);
   }, [questionIndex, navigateTo]);
+
+  // Register back handler in header
+  useEffect(() => {
+    setOnBack(handleBack);
+    return () => setOnBack(null);
+  }, [handleBack, setOnBack]);
 
   // Loading state
   if (isLoading) {
@@ -344,6 +376,24 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
 
   // Generate unique key for animation
   const questionKey = `q${questionIndex}-${question.id}`;
+
+  // Show section interstitial
+  if (showInterstitial && currentSection) {
+    return (
+      <>
+        <FlowProgress
+          currentGlobalQuestion={progress.current}
+          totalGlobalQuestions={progress.total}
+          className="mb-6"
+        />
+        <SectionInterstitial
+          section={currentSection}
+          totalSections={FAMILY_SECTIONS.length}
+          onContinue={() => setShowInterstitial(false)}
+        />
+      </>
+    );
+  }
 
   // Render normal question
   return (

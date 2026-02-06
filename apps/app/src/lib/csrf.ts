@@ -34,6 +34,9 @@ function isOriginTrusted(request: NextRequest): boolean {
   // Lista de origens permitidas
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_APP_URL,
+    process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : undefined,
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3300',

@@ -1,4 +1,6 @@
+import { GTMPageContext } from '@/components/GTMPageContext';
 import { Metadata } from 'next';
+import { OnboardingBackProvider } from '@/components/onboarding-flow/OnboardingBackContext';
 import { OnboardingHeader } from './_components/OnboardingHeader';
 
 export const metadata: Metadata = {
@@ -12,9 +14,12 @@ export default function OnboardingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-linear-to-b from-fuchsia-50 to-fuchsia-100">
-      <OnboardingHeader />
-      {children}
-    </div>
+    <OnboardingBackProvider>
+      <GTMPageContext pageType="onboarding" showCookieConsent={false} />
+      <div className="min-h-screen bg-linear-to-b from-fuchsia-50 to-fuchsia-100">
+        <OnboardingHeader />
+        {children}
+      </div>
+    </OnboardingBackProvider>
   );
 }

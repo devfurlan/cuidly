@@ -14,27 +14,25 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import {
   PiBell,
+  PiBriefcase,
+  PiChatCircle,
+  PiCheck,
   PiEnvelope,
   PiLock,
+  PiMagnifyingGlass,
+  PiNote,
+  PiRocket,
   PiShieldCheck,
+  PiSparkle,
+  PiStar,
   PiTrash,
+  PiUserCircle,
   PiWarningCircle,
 } from 'react-icons/pi';
 
 import { PasswordValidationIndicator } from '@/app/(auth)/cadastro/_components/PasswordValidationIndicator';
 import { PageTitle } from '@/components/PageTitle';
 import { PasswordInput } from '@/components/ui/PasswordInput';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/shadcn/alert-dialog';
 import { Badge } from '@/components/ui/shadcn/badge';
 import { Button } from '@/components/ui/shadcn/button';
 import {
@@ -44,6 +42,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/shadcn/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/shadcn/dialog';
 import { Input } from '@/components/ui/shadcn/input';
 import { Label } from '@/components/ui/shadcn/label';
 import { Skeleton } from '@/components/ui/shadcn/skeleton';
@@ -58,13 +62,26 @@ import { useUser } from '@/contexts/UserContext';
 import { createClient } from '@/utils/supabase/client';
 import { toast } from 'sonner';
 
+type DeleteStep = 'retention' | 'confirm';
+
+const FAMILY_DELETE_LOSSES = [
+  { icon: PiBriefcase, text: 'Suas vagas serão encerradas' },
+  { icon: PiChatCircle, text: 'Todas as conversas serão excluídas' },
+  { icon: PiStar, text: 'Suas avaliações serão removidas' },
+  { icon: PiMagnifyingGlass, text: 'Matching inteligente e filtros avançados' },
+  { icon: PiRocket, text: 'Boost de vaga e benefícios do plano' },
+];
+
+const NANNY_DELETE_LOSSES = [
+  { icon: PiNote, text: 'Suas candidaturas serão perdidas' },
+  { icon: PiChatCircle, text: 'Todas as conversas serão excluídas' },
+  { icon: PiUserCircle, text: 'Seu perfil será removido das buscas' },
+  { icon: PiShieldCheck, text: 'Seus selos e verificações serão perdidos' },
+  { icon: PiSparkle, text: 'Destaque, matching e benefícios do plano' },
+];
+
 interface SettingsData {
   email: string;
-  // Notification preferences
-  notifyNewMessages: boolean;
-  notifyNewReviews: boolean;
-  notifyNewJobs?: boolean; // nanny only
-  notifyNewApplicants?: boolean; // family only
   // Privacy
   isProfilePublic: boolean;
 }
@@ -93,10 +110,6 @@ export default function ConfiguracoesPage() {
   // Settings state
   const [settings, setSettings] = useState<SettingsData>({
     email: user?.email || '',
-    notifyNewMessages: true,
-    notifyNewReviews: true,
-    notifyNewJobs: true,
-    notifyNewApplicants: true,
     isProfilePublic: true,
   });
 
@@ -106,11 +119,46 @@ export default function ConfiguracoesPage() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Delete account state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<DeleteStep>('retention');
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
+  const deleteLosses = isNanny
+    ? NANNY_DELETE_LOSSES
+    : FAMILY_DELETE_LOSSES;
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setDeleteStep('retention');
+    setDeleteConfirmText('');
+  };
+
   // Profile visibility state
   const [isSavingVisibility, setIsSavingVisibility] = useState(false);
+
+  // Email verification state
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean | null>(null);
+  const [showVerificationCodeInput, setShowVerificationCodeInput] =
+    useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+
+  useEffect(() => {
+    async function loadEmailStatus() {
+      try {
+        const res = await fetch('/api/user/me');
+        if (res.ok) {
+          const data = await res.json();
+          setIsEmailVerified(data.emailVerified ?? false);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadEmailStatus();
+  }, []);
 
   // Load nanny profile data (for isProfilePublic)
   const loadNannySettings = useCallback(async () => {
@@ -165,6 +213,59 @@ export default function ConfiguracoesPage() {
       toast.error('Erro ao alterar senha. Tente novamente.');
     } finally {
       setIsChangingPassword(false);
+    }
+  };
+
+  // Handle sending verification code
+  const handleSendVerificationCode = async () => {
+    setIsSendingCode(true);
+    try {
+      const response = await fetch('/api/email/resend-verification', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('Código enviado! Verifique seu e-mail.');
+        setShowVerificationCodeInput(true);
+      } else {
+        toast.error(data.message || 'Erro ao enviar código de verificação.');
+      }
+    } catch (error) {
+      console.error('Error sending verification code:', error);
+      toast.error('Erro ao enviar código. Tente novamente.');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  // Handle verifying the 6-digit code
+  const handleVerifyCode = async () => {
+    if (!verificationCode || verificationCode.trim().length !== 6) {
+      toast.error('Digite um código válido de 6 dígitos');
+      return;
+    }
+
+    setIsVerifying(true);
+    try {
+      const response = await fetch('/api/email/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: verificationCode.trim() }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success('E-mail verificado com sucesso!');
+        setIsEmailVerified(true);
+        setShowVerificationCodeInput(false);
+        setVerificationCode('');
+      } else {
+        toast.error(data.message || 'Código inválido');
+      }
+    } catch (error) {
+      console.error('Error verifying email:', error);
+      toast.error('Erro ao verificar e-mail. Tente novamente.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -274,7 +375,7 @@ export default function ConfiguracoesPage() {
                 Seu e-mail de acesso à plataforma
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="flex-1">
                   <Label htmlFor="email">E-mail</Label>
@@ -286,10 +387,83 @@ export default function ConfiguracoesPage() {
                     className="mt-1"
                   />
                 </div>
-                <Badge variant="outline" className="mt-6">
-                  Verificado
-                </Badge>
+                {isEmailVerified !== null && (
+                  <Badge
+                    variant={isEmailVerified ? 'success' : 'warning'}
+                    className="mt-6"
+                  >
+                    {isEmailVerified ? 'Verificado' : 'Não verificado'}
+                  </Badge>
+                )}
               </div>
+
+              {isEmailVerified === false && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                  <p className="mb-3 text-sm text-amber-800">
+                    Seu e-mail ainda não foi verificado. Verifique para ter
+                    acesso completo à plataforma.
+                  </p>
+
+                  {!showVerificationCodeInput ? (
+                    <Button
+                      size="sm"
+                      onClick={handleSendVerificationCode}
+                      disabled={isSendingCode}
+                    >
+                      {isSendingCode
+                        ? 'Enviando...'
+                        : 'Enviar código de verificação'}
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Código de 6 dígitos"
+                          value={verificationCode}
+                          onChange={(e) =>
+                            setVerificationCode(
+                              e.target.value.replace(/\D/g, '').slice(0, 6),
+                            )
+                          }
+                          maxLength={6}
+                          className="max-w-xs font-mono text-lg tracking-wider"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              handleVerifyCode();
+                            }
+                          }}
+                        />
+                        <Button
+                          onClick={handleVerifyCode}
+                          disabled={
+                            isVerifying || verificationCode.length !== 6
+                          }
+                          variant="success"
+                        >
+                          {isVerifying ? (
+                            'Verificando...'
+                          ) : (
+                            <>
+                              <PiCheck />
+                              Verificar
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <button
+                        onClick={handleSendVerificationCode}
+                        disabled={isSendingCode}
+                        className="text-xs text-amber-700 underline hover:text-amber-900"
+                      >
+                        {isSendingCode
+                          ? 'Enviando...'
+                          : 'Não recebeu? Reenviar código'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -390,12 +564,7 @@ export default function ConfiguracoesPage() {
                       perfil forem publicadas
                     </p>
                   </div>
-                  <Switch
-                    checked={settings.notifyNewJobs}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, notifyNewJobs: checked })
-                    }
-                  />
+                  <Switch checked disabled />
                 </div>
               )}
 
@@ -408,12 +577,7 @@ export default function ConfiguracoesPage() {
                       Receba alertas quando babás se candidatarem às suas vagas
                     </p>
                   </div>
-                  <Switch
-                    checked={settings.notifyNewApplicants}
-                    onCheckedChange={(checked) =>
-                      setSettings({ ...settings, notifyNewApplicants: checked })
-                    }
-                  />
+                  <Switch checked disabled />
                 </div>
               )}
 
@@ -425,12 +589,7 @@ export default function ConfiguracoesPage() {
                     Receba alertas quando receber novas mensagens
                   </p>
                 </div>
-                <Switch
-                  checked={settings.notifyNewMessages}
-                  onCheckedChange={(checked) =>
-                    setSettings({ ...settings, notifyNewMessages: checked })
-                  }
-                />
+                <Switch checked disabled />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border p-4">
@@ -440,17 +599,12 @@ export default function ConfiguracoesPage() {
                     Receba alertas quando receber novas avaliações
                   </p>
                 </div>
-                <Switch
-                  checked={settings.notifyNewReviews}
-                  onCheckedChange={(checked) =>
-                    setSettings({ ...settings, notifyNewReviews: checked })
-                  }
-                />
+                <Switch checked disabled />
               </div>
 
               <p className="text-xs text-gray-500">
-                Nota: As preferências de notificação serão implementadas em
-                breve. Por enquanto, todas as notificações estão ativas.
+                As preferências de notificação serão implementadas em breve. Por
+                enquanto, todas as notificações estão ativas.
               </p>
             </CardContent>
           </Card>
@@ -497,88 +651,140 @@ export default function ConfiguracoesPage() {
             </CardContent>
           </Card>
 
-          {/* Delete Account */}
-          <Card className="border-red-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-600">
-                <PiTrash className="size-5" />
-                Excluir Conta
-              </CardTitle>
-              <CardDescription>
-                Exclua permanentemente sua conta e todos os dados associados
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                <div className="flex gap-3">
-                  <PiWarningCircle className="size-5 shrink-0 text-red-600" />
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-red-800">
-                      Esta ação é irreversível
-                    </p>
-                    <p className="text-sm text-red-700">
-                      Ao excluir sua conta, todos os seus dados serão
-                      permanentemente removidos, incluindo perfil, mensagens,
-                      avaliações e histórico.
-                    </p>
-                  </div>
-                </div>
-              </div>
+          {/* Delete Account - discrete button */}
+          <div className="mt-6 flex justify-start">
+            <Button
+              variant="ghost"
+              className="text-sm text-gray-400 hover:text-red-600"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              Excluir conta
+            </Button>
+          </div>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="mt-4">
-                    <PiTrash className="mr-2 size-4" />
-                    Excluir Minha Conta
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Tem certeza que deseja excluir sua conta?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription asChild>
-                      <div className="space-y-4 text-sm text-gray-800">
-                        <p>
-                          Esta ação não pode ser desfeita. Todos os seus dados
-                          serão permanentemente removidos de nossos servidores.
-                        </p>
-                        <div className="space-y-2">
-                          <Label htmlFor="deleteConfirm">
-                            Digite <strong>EXCLUIR</strong> para confirmar:
-                          </Label>
-                          <Input
-                            id="deleteConfirm"
-                            value={deleteConfirmText}
-                            onChange={(e) =>
-                              setDeleteConfirmText(e.target.value.toUpperCase())
-                            }
-                            placeholder="EXCLUIR"
-                          />
+          {/* Delete Account Modal */}
+          <Dialog
+            open={isDeleteModalOpen}
+            onOpenChange={handleCloseDeleteModal}
+          >
+            <DialogContent className="max-w-[calc(100%-3rem)] overflow-hidden rounded-2xl border-0 p-0 sm:max-w-md">
+              {/* Step 1: Retention */}
+              {deleteStep === 'retention' && (
+                <>
+                  <div className="relative bg-linear-to-br from-amber-500 via-orange-500 to-orange-600 px-4 pt-8 pb-6 text-center sm:px-6 sm:pt-10 sm:pb-8">
+                    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                      <div className="absolute -top-4 -right-4 size-24 rounded-full bg-white/10" />
+                      <div className="absolute bottom-0 -left-8 size-32 rounded-full bg-white/5" />
+                    </div>
+                    <div className="relative mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm sm:mb-4 sm:size-16">
+                      <PiWarningCircle className="size-7 text-white sm:size-8" />
+                    </div>
+                    <DialogTitle className="mb-2 text-xl font-bold text-white sm:text-2xl">
+                      Tem certeza?
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-orange-100 sm:text-base">
+                      Ao excluir sua conta, você perderá acesso a tudo isso:
+                    </DialogDescription>
+                  </div>
+
+                  <div className="bg-white p-4 sm:p-6">
+                    <div className="mb-6 space-y-3">
+                      {deleteLosses.map((benefit, index) => (
+                        <div key={index} className="flex items-center gap-3">
+                          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100">
+                            <benefit.icon className="size-5 text-red-600" />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">
+                            {benefit.text}
+                          </span>
                         </div>
-                      </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => setDeleteConfirmText('')}>
-                      Cancelar
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      disabled={
-                        deleteConfirmText !== 'EXCLUIR' || isDeletingAccount
-                      }
-                      className="bg-red-600 hover:bg-red-700"
+                      ))}
+                    </div>
+
+                    <div className="mb-6 rounded-lg bg-amber-50 p-4">
+                      <p className="text-sm text-amber-800">
+                        Se você possui uma assinatura ativa, perderá o acesso
+                        imediatamente.
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={handleCloseDeleteModal}
+                      className="w-full bg-linear-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-600 hover:to-purple-700"
+                      size="lg"
                     >
-                      {isDeletingAccount
-                        ? 'Excluindo...'
-                        : 'Confirmar Exclusão'}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardContent>
-          </Card>
+                      Manter minha conta
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      onClick={() => setDeleteStep('confirm')}
+                      className="mt-3 w-full text-gray-400 hover:text-gray-600"
+                    >
+                      Continuar com a exclusão
+                    </Button>
+                  </div>
+                </>
+              )}
+
+              {/* Step 2: Confirmation */}
+              {deleteStep === 'confirm' && (
+                <>
+                  <div className="relative bg-linear-to-br from-gray-600 via-gray-700 to-gray-800 px-4 pt-8 pb-6 text-center sm:px-6 sm:pt-10 sm:pb-8">
+                    <DialogTitle className="mb-2 text-xl font-bold text-white sm:text-2xl">
+                      Excluir conta
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-gray-300 sm:text-base">
+                      Esta ação é permanente e irreversível
+                    </DialogDescription>
+                  </div>
+
+                  <div className="bg-white p-4 sm:p-6">
+                    <p className="mb-4 text-sm text-gray-600">
+                      Todos os seus dados serão permanentemente removidos,
+                      incluindo perfil, mensagens, avaliações e histórico.
+                    </p>
+
+                    <div className="mb-6 space-y-2">
+                      <Label htmlFor="deleteConfirm">
+                        Digite <strong>EXCLUIR</strong> para confirmar:
+                      </Label>
+                      <Input
+                        id="deleteConfirm"
+                        value={deleteConfirmText}
+                        onChange={(e) =>
+                          setDeleteConfirmText(e.target.value.toUpperCase())
+                        }
+                        placeholder="EXCLUIR"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <Button
+                        onClick={() => setDeleteStep('retention')}
+                        className="w-full bg-linear-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-600 hover:to-purple-700"
+                        size="lg"
+                      >
+                        Voltar e manter minha conta
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteAccount}
+                        disabled={
+                          deleteConfirmText !== 'EXCLUIR' || isDeletingAccount
+                        }
+                        className="w-full"
+                      >
+                        {isDeletingAccount
+                          ? 'Excluindo...'
+                          : 'Excluir minha conta'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
     </>

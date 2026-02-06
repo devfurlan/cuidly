@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   PiBaby,
   PiBriefcase,
@@ -43,6 +43,7 @@ import {
 import { UserProvider } from '@/contexts/UserContext';
 import { useActivityTracker } from '@/hooks/useActivityTracker';
 import { createClient } from '@/utils/supabase/client';
+import LogRocket from 'logrocket';
 import { cn } from '@cuidly/shared';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -59,7 +60,7 @@ interface NavigationItem {
 }
 
 const nannyNavigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/app/dashboard', icon: PiHouse },
+  { name: 'Início', href: '/app/dashboard', icon: PiHouse },
   { name: 'Explorar Vagas', href: '/app/vagas', icon: PiMagnifyingGlass },
   { name: 'Mensagens', href: '/app/mensagens', icon: PiChatCircle },
   { name: 'Meu Perfil', href: '/app/perfil', icon: PiUser },
@@ -67,10 +68,10 @@ const nannyNavigation: NavigationItem[] = [
 ];
 
 const familyNavigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/app/dashboard', icon: PiHouse },
+  { name: 'Início', href: '/app/dashboard', icon: PiHouse },
   { name: 'Minhas Vagas', href: '/app/vagas', icon: PiBriefcase },
   { name: 'Meus Filhos', href: '/app/filhos', icon: PiBaby },
-  { name: 'Explorar Babás', href: '/app/babas', icon: PiMagnifyingGlass },
+  { name: 'Encontrar Babás', href: '/app/babas', icon: PiMagnifyingGlass },
   { name: 'Mensagens', href: '/app/mensagens', icon: PiChatCircle },
   { name: 'Favoritas', href: '/app/favoritos', icon: PiHeart },
   { name: 'Minhas Avaliações', href: '/app/minhas-avaliacoes', icon: PiStar },
@@ -103,7 +104,7 @@ const routeTitles: Record<string, string> = {
   '/app/vagas/criar': 'Criar Vaga',
   '/app/assinatura': 'Assinatura',
   '/app/avaliacoes': 'Avaliações Pendentes',
-  '/app/babas': 'Explorar Babás',
+  '/app/babas': 'Encontrar Babás',
 };
 
 interface DashboardLayoutProps {
@@ -234,6 +235,17 @@ export default function DashboardLayout({
   // Track user activity for online status
   useActivityTracker();
 
+  // Identify user in LogRocket
+  useEffect(() => {
+    if (authId) {
+      LogRocket.identify(authId, {
+        name: userName ?? '',
+        email: userEmail ?? '',
+        role,
+      });
+    }
+  }, [authId, userName, userEmail, role]);
+
   // Dados do usuário para o contexto
   const userData = {
     role,
@@ -246,7 +258,8 @@ export default function DashboardLayout({
 
   // Determina o título da página baseado no pathname
   const getPageTitle = (): string | undefined => {
-    // Primeiro, verifica se é uma rota na navegação principal
+    if (pathname === '/app/dashboard') return undefined;
+
     const navItem = navigation.find((item) => pathname === item.href);
     if (navItem) return navItem.name;
 
@@ -512,15 +525,17 @@ export default function DashboardLayout({
               <CancellationRetentionBanner />
 
               {/* Page header */}
-              <header className="py-10">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                  {pageTitle && (
+              {pageTitle ? (
+                <header className="py-10">
+                  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <h1 className="text-3xl font-bold tracking-tight text-gray-900">
                       {pageTitle}
                     </h1>
-                  )}
-                </div>
-              </header>
+                  </div>
+                </header>
+              ) : (
+                <div className="py-4" />
+              )}
             </div>
 
             {/* Main content com overlap */}

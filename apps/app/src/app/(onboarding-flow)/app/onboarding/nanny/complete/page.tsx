@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PiUserCircle, PiMagnifyingGlass, PiBriefcase } from 'react-icons/pi';
+import { trackNannyRegistration } from '@/lib/gtm-events';
 import { secureStorage } from '@/lib/onboarding-storage';
 import { createClient } from '@/utils/supabase/client';
 
@@ -66,6 +67,8 @@ export default function NannyOnboardingCompletePage() {
         secureStorage.removeItem(STORAGE_KEY);
         secureStorage.removeItem(GENERATED_BIO_KEY);
         secureStorage.removeItem(GENERATED_MINI_BIO_KEY);
+
+        trackNannyRegistration();
 
         // Mark API as completed
         setApiCompleted(true);

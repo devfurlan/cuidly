@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Header from './_components/layout/Header';
 import Footer from './_components/layout/Footer';
+import { CookieConsentBanner } from '@/components/cookie-consent/CookieConsentBanner';
 import { GTMPageContext } from '@/components/GTMPageContext';
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
       <Header />
       {children}
       <Footer />
+      <CookieConsentBanner />
     </div>
   );
 }
