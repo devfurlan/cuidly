@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "vercel-build": "pnpm exec prisma generate --schema=../../packages/database/prisma/schema.prisma && pnpm exec prisma migrate deploy --schema=../../packages/database/prisma/schema.prisma && next build"
+    "vercel-build": "pnpm exec prisma generate --config=../../packages/database/prisma.config.ts && pnpm exec prisma migrate deploy --config=../../packages/database/prisma.config.ts && next build"
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
