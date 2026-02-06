@@ -4,36 +4,33 @@
  * Signup Page
  * /cadastro
  *
- * Signup page with email/password and user type selection
+ * Signup page with email/password, Google and Facebook OAuth.
+ * User type (Família/Babá) is selected during onboarding.
  */
 
 export const dynamic = 'force-dynamic';
 
-import {
-  PiCheckCircleFill,
-  PiUserCheckDuotone,
-  PiUsersDuotone,
-  PiWarningCircle,
-} from 'react-icons/pi';
+import { PiCircleNotch, PiWarningCircle } from 'react-icons/pi';
 
 import { PasswordValidationIndicator } from '@/app/(auth)/cadastro/_components/PasswordValidationIndicator';
+import { FacebookIcon } from '@/components/icons/FacebookIcon';
+import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { LoadingButton } from '@/components/ui/LoadingButton';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert';
+import { Button } from '@/components/ui/shadcn/button';
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from '@/components/ui/shadcn/field';
 import { Input } from '@/components/ui/shadcn/input';
-import { cn } from '@cuidly/shared';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
-
-type UserType = 'FAMILY' | 'NANNY';
+import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
 export default function SignupPage() {
   return (
@@ -59,29 +56,16 @@ function SignupFormSkeleton() {
 
 function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  // Get type from URL parameter
-  const typeParam = searchParams.get('type')?.toUpperCase() as
-    | UserType
-    | undefined;
-  const hasTypeParam = typeParam === 'FAMILY' || typeParam === 'NANNY';
-
-  const [userType, setUserType] = useState<UserType>(
-    hasTypeParam ? typeParam : 'FAMILY',
-  );
-
-  // Update userType if URL param changes
-  useEffect(() => {
-    if (hasTypeParam) {
-      setUserType(typeParam);
-    }
-  }, [typeParam, hasTypeParam]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isSocialLoading = isGoogleLoading || isFacebookLoading;
 
   const supabase = createClient();
 
@@ -122,6 +106,48 @@ function SignupForm() {
     passwordValidations.hasNumber &&
     passwordValidations.hasSymbol &&
     passwordValidations.passwordsMatch;
+
+  // Handle Google OAuth signup
+  const handleGoogleSignup = async () => {
+    try {
+      setIsGoogleLoading(true);
+      setError(null);
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      console.error('Google signup error:', err);
+      setError('Erro ao conectar com Google. Tente novamente.');
+      setIsGoogleLoading(false);
+    }
+  };
+
+  // Handle Facebook OAuth signup
+  const handleFacebookSignup = async () => {
+    try {
+      setIsFacebookLoading(true);
+      setError(null);
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      console.error('Facebook signup error:', err);
+      setError('Erro ao conectar com Facebook. Tente novamente.');
+      setIsFacebookLoading(false);
+    }
+  };
 
   // Handle email/password signup
   const handleEmailSignup = async (e: React.FormEvent) => {
@@ -166,42 +192,20 @@ function SignupForm() {
       setIsLoading(true);
       setError(null);
 
-      // Create auth user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp(
-        {
+      // Create auth user (no type - will be selected in onboarding)
+      const { data: authData, error: signUpError } =
+        await supabase.auth.signUp({
           email,
           password,
           options: {
-            data: {
-              user_type: userType,
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback?type=${userType.toLowerCase()}`,
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
-        },
-      );
+        });
 
       if (signUpError) throw signUpError;
 
       if (authData.user) {
-        // Create nanny or family record in database
-        const response = await fetch('/api/auth/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            authId: authData.user.id,
-            email: authData.user.email,
-            type: userType,
-          }),
-        });
-
-        if (!response.ok) {
-          const result = await response.json();
-          throw new Error(result.error || 'Erro ao criar usuário');
-        }
-
-        // Redirect to onboarding
+        // Redirect to onboarding (type selection will be first step)
         router.push('/app/onboarding');
       }
     } catch (err) {
@@ -219,11 +223,7 @@ function SignupForm() {
         <div className="flex flex-col items-start gap-1">
           <h1 className="text-2xl font-bold">Crie sua conta</h1>
           <p className="text-sm text-muted-foreground">
-            {hasTypeParam
-              ? userType === 'NANNY'
-                ? 'Cadastre-se como babá e encontre famílias que precisam de você'
-                : 'Cadastre-se como família e encontre a babá ideal'
-              : 'Preencha o formulário abaixo e faça parte da Cuidly'}
+            Preencha o formulário abaixo e faça parte da Cuidly
           </p>
         </div>
 
@@ -235,125 +235,41 @@ function SignupForm() {
           </Alert>
         )}
 
-        {/* User Type Selection - only show if type not in URL */}
-        {!hasTypeParam && (
-          <Field>
-            <FieldLabel>Eu sou</FieldLabel>
-            <div className="mt-0 grid gap-3">
-              <button
-                type="button"
-                onClick={() => setUserType('FAMILY')}
-                disabled={isLoading}
-                className={cn(
-                  'flex items-center justify-between rounded-lg border-2 bg-white/60 p-4 text-left transition-all',
-                  userType === 'FAMILY'
-                    ? 'border-fuchsia-500 bg-white'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50',
-                  isLoading && 'cursor-not-allowed opacity-50',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'flex size-10 items-center justify-center rounded-full',
-                      userType === 'FAMILY' ? 'bg-fuchsia-100' : 'bg-gray-100',
-                    )}
-                  >
-                    <PiUsersDuotone
-                      className={cn(
-                        'size-5',
-                        userType === 'FAMILY'
-                          ? 'text-fuchsia-600'
-                          : 'text-gray-500',
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <span
-                      className={cn(
-                        'text-base font-medium',
-                        userType === 'FAMILY'
-                          ? 'text-fuchsia-900'
-                          : 'text-gray-700',
-                      )}
-                    >
-                      Sou uma família
-                    </span>
-                    <p
-                      className={cn(
-                        'text-xs',
-                        userType === 'FAMILY'
-                          ? 'text-fuchsia-600'
-                          : 'text-gray-500',
-                      )}
-                    >
-                      Procuro uma babá para meus filhos
-                    </p>
-                  </div>
-                </div>
-                {userType === 'FAMILY' && (
-                  <PiCheckCircleFill className="ml-3 size-6 shrink-0 text-fuchsia-500" />
-                )}
-              </button>
+        {/* Social OAuth Buttons */}
+        <Field className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={handleGoogleSignup}
+            disabled={isLoading || isSocialLoading}
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          >
+            {isGoogleLoading ? (
+              <PiCircleNotch className="size-5 animate-spin" />
+            ) : (
+              <GoogleIcon className="size-5" />
+            )}
+            Cadastrar com Google
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={handleFacebookSignup}
+            disabled={isLoading || isSocialLoading}
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          >
+            {isFacebookLoading ? (
+              <PiCircleNotch className="size-5 animate-spin" />
+            ) : (
+              <FacebookIcon className="size-5" />
+            )}
+            Cadastrar com Facebook
+          </Button>
+        </Field>
 
-              <button
-                type="button"
-                onClick={() => setUserType('NANNY')}
-                disabled={isLoading}
-                className={cn(
-                  'flex items-center justify-between rounded-lg border-2 bg-white/60 p-4 text-left transition-all',
-                  userType === 'NANNY'
-                    ? 'border-fuchsia-500 bg-white'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50',
-                  isLoading && 'cursor-not-allowed opacity-50',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={cn(
-                      'flex size-10 items-center justify-center rounded-full',
-                      userType === 'NANNY' ? 'bg-fuchsia-100' : 'bg-gray-100',
-                    )}
-                  >
-                    <PiUserCheckDuotone
-                      className={cn(
-                        'size-5',
-                        userType === 'NANNY'
-                          ? 'text-fuchsia-600'
-                          : 'text-gray-500',
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <span
-                      className={cn(
-                        'text-base font-medium',
-                        userType === 'NANNY'
-                          ? 'text-fuchsia-900'
-                          : 'text-gray-700',
-                      )}
-                    >
-                      Sou uma babá
-                    </span>
-                    <p
-                      className={cn(
-                        'text-xs',
-                        userType === 'NANNY'
-                          ? 'text-fuchsia-600'
-                          : 'text-gray-500',
-                      )}
-                    >
-                      Procuro famílias para trabalhar
-                    </p>
-                  </div>
-                </div>
-                {userType === 'NANNY' && (
-                  <PiCheckCircleFill className="ml-3 size-6 shrink-0 text-fuchsia-500" />
-                )}
-              </button>
-            </div>
-          </Field>
-        )}
+        <FieldSeparator>ou</FieldSeparator>
 
         <Field>
           <FieldLabel htmlFor="email">E-mail</FieldLabel>
@@ -364,7 +280,7 @@ function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={isLoading}
+            disabled={isLoading || isSocialLoading}
             autoComplete="email"
           />
         </Field>
@@ -377,7 +293,7 @@ function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            disabled={isLoading}
+            disabled={isLoading || isSocialLoading}
             autoComplete="new-password"
           />
           {password.length > 0 && (
@@ -414,7 +330,7 @@ function SignupForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            disabled={isLoading}
+            disabled={isLoading || isSocialLoading}
             autoComplete="new-password"
           />
           {confirmPassword.length > 0 && (
@@ -434,10 +350,10 @@ function SignupForm() {
 
         <Field>
           <LoadingButton
-            size={'lg'}
+            size="lg"
             type="submit"
             className="w-full"
-            disabled={!isPasswordValid}
+            disabled={!isPasswordValid || isSocialLoading}
             isLoading={isLoading}
             loadingText="Criando conta..."
           >

@@ -39,6 +39,10 @@ function FamilyOnboardingContent() {
         const response = await fetch('/api/user/me');
         if (response.ok) {
           const userData = await response.json();
+          if (userData.role === 'UNTYPED') {
+            router.push('/app/onboarding/select-type');
+            return;
+          }
           if (userData.role !== 'FAMILY') {
             router.push('/app/onboarding');
             return;

@@ -153,10 +153,10 @@ export default function ComoFuncionaPage() {
         <div className="text-center mt-16">
           <h2 className="text-3xl font-bold mb-6">Pronto para começar?</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/cadastro?type=family">
+            <Link href="/cadastro">
               <Button size="lg">Sou Família</Button>
             </Link>
-            <Link href="/cadastro?type=nanny">
+            <Link href="/cadastro">
               <Button size="lg" variant="outline">Sou Babá</Button>
             </Link>
           </div>

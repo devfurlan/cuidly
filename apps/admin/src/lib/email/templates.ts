@@ -6,7 +6,7 @@ export function getPasswordResetEmailTemplate(data: {
   resetLink: string;
 }) {
   return {
-    subject: 'Recuperação de senha - Cuidly Ops',
+    subject: 'Recuperação de senha - Cuidly Admin',
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
@@ -24,7 +24,7 @@ export function getPasswordResetEmailTemplate(data: {
                   <!-- Header com gradiente fuchsia -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #9e50a9 0%, #ba6fc6 100%); padding: 48px 32px; text-align: center;">
-                      <img src="https://ops.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
+                      <img src="https://admin.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
                       <h1 style="margin: 0 0 16px 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                         Recuperação de Senha 🔑
                       </h1>
@@ -42,7 +42,7 @@ export function getPasswordResetEmailTemplate(data: {
                       </p>
 
                       <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.7;">
-                        Recebemos uma solicitação para redefinir a senha da sua conta na Cuidly Ops. Se foi você quem solicitou, clique no botão abaixo para criar uma nova senha.
+                        Recebemos uma solicitação para redefinir a senha da sua conta na Cuidly Admin. Se foi você quem solicitou, clique no botão abaixo para criar uma nova senha.
                       </p>
 
                       <!-- CTA Button - Redefinir Senha -->
@@ -99,7 +99,7 @@ Recuperação de Senha 🔑
 
 Olá, ${data.name}!
 
-Recebemos uma solicitação para redefinir a senha da sua conta na Cuidly Ops. Se foi você quem solicitou, clique no link abaixo para criar uma nova senha.
+Recebemos uma solicitação para redefinir a senha da sua conta na Cuidly Admin. Se foi você quem solicitou, clique no link abaixo para criar uma nova senha.
 
 Redefinir senha:
 ${data.resetLink}
@@ -124,14 +124,14 @@ export function getWelcomeAdminEmailTemplate(data: {
   loginUrl: string;
 }) {
   return {
-    subject: 'Boas-vindas à Cuidly Ops! 🎉',
+    subject: 'Boas-vindas à Cuidly Admin! 🎉',
     html: `
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Boas-vindas à Cuidly Ops!</title>
+          <title>Boas-vindas à Cuidly Admin!</title>
         </head>
         <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f7eef9; line-height: 1.6;">
           <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f7eef9; padding: 20px 0;">
@@ -142,9 +142,9 @@ export function getWelcomeAdminEmailTemplate(data: {
                   <!-- Header com gradiente fuchsia -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #9e50a9 0%, #ba6fc6 100%); padding: 48px 32px; text-align: center;">
-                      <img src="https://ops.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
+                      <img src="https://admin.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
                       <h1 style="margin: 0 0 16px 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
-                        Boas-vindas à Cuidly Ops! 🎉
+                        Boas-vindas à Cuidly Admin! 🎉
                       </h1>
                       <p style="margin: 0; color: #eedbf3; font-size: 18px; font-weight: 400;">
                         Sua conta de administrador foi criada com sucesso
@@ -160,7 +160,7 @@ export function getWelcomeAdminEmailTemplate(data: {
                       </p>
 
                       <p style="margin: 0 0 24px 0; color: #4b5563; font-size: 16px; line-height: 1.7;">
-                        Estamos felizes em ter você na equipe! Abaixo estão suas credenciais de acesso à plataforma Cuidly Ops.
+                        Estamos felizes em ter você na equipe! Abaixo estão suas credenciais de acesso à plataforma Cuidly Admin.
                       </p>
 
                       <!-- Caixa de Credenciais -->
@@ -199,7 +199,7 @@ export function getWelcomeAdminEmailTemplate(data: {
                         <tr>
                           <td align="center">
                             <a href="${data.loginUrl}" style="display: inline-block; background: #9e50a9; color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(158, 80, 169, 0.3);">
-                              Acessar Cuidly Ops
+                              Acessar Cuidly Admin
                             </a>
                           </td>
                         </tr>
@@ -226,11 +226,11 @@ export function getWelcomeAdminEmailTemplate(data: {
       </html>
     `,
     text: `
-Boas-vindas à Cuidly Ops! 🎉
+Boas-vindas à Cuidly Admin! 🎉
 
 Olá, ${data.name}! 👋
 
-Estamos felizes em ter você na equipe! Abaixo estão suas credenciais de acesso à plataforma Cuidly Ops.
+Estamos felizes em ter você na equipe! Abaixo estão suas credenciais de acesso à plataforma Cuidly Admin.
 
 📧 E-mail: ${data.email}
 🔐 Senha temporária: ${data.password}
@@ -275,7 +275,7 @@ export function getWelcomeNannyEmailTemplate(data: {
                   <!-- Header com gradiente fuchsia -->
                   <tr>
                     <td style="background: linear-gradient(135deg, #9e50a9 0%, #ba6fc6 100%); padding: 48px 32px; text-align: center;">
-                      <img src="https://ops.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
+                      <img src="https://admin.cuidly.com/assets/img/logo-h.png" alt="Cuidly" style="max-width: 140px; height: auto; margin-bottom: 24px;" />
                       <h1 style="margin: 0 0 16px 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                         Boas-vindas à Cuidly! 🌟
                       </h1>

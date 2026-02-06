@@ -56,7 +56,10 @@ export const updateSession = async (request: NextRequest) => {
       // Clear the session and redirect to login with error
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('error', 'unauthorized');
-      loginUrl.searchParams.set('message', 'Acesso negado. Apenas administradores podem acessar o Cuidly OPS.');
+      loginUrl.searchParams.set(
+        'message',
+        'Acesso negado. Apenas administradores podem acessar o Cuidly Admin.',
+      );
 
       // Create a new response with redirect
       const redirectResponse = NextResponse.redirect(loginUrl);

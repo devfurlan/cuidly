@@ -15,7 +15,7 @@ import { createFreeSubscription } from '@/services/subscription/subscription-ser
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { authId, email, type } = body;
+    const { authId, email, type, name } = body;
 
     // Validate required fields
     if (!authId || !email || !type) {
@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
         data: {
           authId,
           emailAddress: email,
+          name: name || null,
           status: 'PENDING',
         },
       });
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
         data: {
           authId,
           emailAddress: email,
-          name: 'Família', // Default name, will be updated in onboarding
+          name: name || 'Família',
           status: 'PENDING',
         },
       });

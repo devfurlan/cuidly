@@ -20,7 +20,7 @@ export default function BabasPage() {
                 e tenha acesso a vagas exclusivas. Tudo isso gratuitamente!
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/cadastro?type=nanny">
+                <Link href="/cadastro">
                   <Button size="lg" className="w-full sm:w-auto">
                     Cadastrar Grátis
                   </Button>
@@ -145,7 +145,7 @@ export default function BabasPage() {
           </div>
 
           <div className="text-center mt-8">
-            <Link href="/cadastro?type=nanny">
+            <Link href="/cadastro">
               <Button size="lg" variant="secondary">
                 Cadastrar e Conhecer o Plano Pro
               </Button>
@@ -247,7 +247,7 @@ export default function BabasPage() {
           <p className="text-xl mb-8 opacity-90">
             Cadastre-se grátis e comece a receber oportunidades hoje
           </p>
-          <Link href="/cadastro?type=nanny">
+          <Link href="/cadastro">
             <Button size="lg" variant="secondary">
               Cadastrar Agora
             </Button>

@@ -223,7 +223,7 @@ export default function SegurancaPage() {
           <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
             Cadastre-se grátis e tenha acesso a babás 100% verificadas
           </p>
-          <Link href="/cadastro?type=family">
+          <Link href="/cadastro">
             <Button size="lg">Começar Agora</Button>
           </Link>
         </div>

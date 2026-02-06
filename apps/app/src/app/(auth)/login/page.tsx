@@ -4,15 +4,23 @@
  * Login Page
  * /login
  *
- * Universal login page with user type detection and redirect
+ * Universal login page with email/password, Google and Facebook OAuth
  */
 
-import { PiWarning } from 'react-icons/pi';
+import { PiCircleNotch, PiWarning } from 'react-icons/pi';
 
+import { FacebookIcon } from '@/components/icons/FacebookIcon';
+import { GoogleIcon } from '@/components/icons/GoogleIcon';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Alert, AlertDescription } from '@/components/ui/shadcn/alert';
+import { Button } from '@/components/ui/shadcn/button';
 import { LoadingButton } from '@/components/ui/LoadingButton';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/shadcn/field';
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+} from '@/components/ui/shadcn/field';
 import { Input } from '@/components/ui/shadcn/input';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -24,7 +32,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isSocialLoading = isGoogleLoading || isFacebookLoading;
 
   const supabase = createClient();
 
@@ -45,6 +57,48 @@ export default function LoginPage() {
     };
 
     return translations[errorMessage] || errorMessage;
+  };
+
+  // Handle Google OAuth login
+  const handleGoogleLogin = async () => {
+    try {
+      setIsGoogleLoading(true);
+      setError(null);
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError('Erro ao conectar com Google. Tente novamente.');
+      setIsGoogleLoading(false);
+    }
+  };
+
+  // Handle Facebook OAuth login
+  const handleFacebookLogin = async () => {
+    try {
+      setIsFacebookLoading(true);
+      setError(null);
+
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (oauthError) throw oauthError;
+    } catch (err) {
+      console.error('Facebook login error:', err);
+      setError('Erro ao conectar com Facebook. Tente novamente.');
+      setIsFacebookLoading(false);
+    }
   };
 
   // Handle email/password login
@@ -74,6 +128,12 @@ export default function LoginPage() {
 
         const userData = await response.json();
 
+        // UNTYPED users go to onboarding (type selection)
+        if (userData.role === 'UNTYPED') {
+          router.push('/app/onboarding');
+          return;
+        }
+
         // Check onboarding status first
         if (!userData.onboardingCompleted) {
           router.push('/app/onboarding');
@@ -102,19 +162,53 @@ export default function LoginPage() {
       <FieldGroup>
         <div className="flex flex-col items-start gap-1">
           <h1 className="text-2xl font-bold">Que bom ver você novamente!</h1>
-          {/* <p className="text-muted-foreground text-sm text-balance">
-                      Faça login para entrar na sua conta
-                    </p> */}
         </div>
+
+        {/* Social OAuth Buttons */}
+        <Field className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={handleGoogleLogin}
+            disabled={isLoading || isSocialLoading}
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          >
+            {isGoogleLoading ? (
+              <PiCircleNotch className="size-5 animate-spin" />
+            ) : (
+              <GoogleIcon className="size-5" />
+            )}
+            Continuar com Google
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            onClick={handleFacebookLogin}
+            disabled={isLoading || isSocialLoading}
+            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+          >
+            {isFacebookLoading ? (
+              <PiCircleNotch className="size-5 animate-spin" />
+            ) : (
+              <FacebookIcon className="size-5" />
+            )}
+            Continuar com Facebook
+          </Button>
+        </Field>
+
+        <FieldSeparator>ou</FieldSeparator>
+
         <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
+          <FieldLabel htmlFor="email">E-mail</FieldLabel>
           <Input
             id="email"
             type="email"
             placeholder="seu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading}
+            disabled={isLoading || isSocialLoading}
             autoComplete="email"
             required
           />
@@ -135,16 +229,17 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            disabled={isLoading}
+            disabled={isLoading || isSocialLoading}
             autoComplete="current-password"
           />
         </Field>
         <Field>
           <LoadingButton
             type="submit"
-            size={'lg'}
+            size="lg"
             isLoading={isLoading}
             loadingText="Entrando..."
+            disabled={isSocialLoading}
           >
             Entrar
           </LoadingButton>
@@ -159,20 +254,12 @@ export default function LoginPage() {
         <Field>
           <div className="block pt-8 text-center text-sm text-gray-600">
             <span className="mb-2 block">Não tem uma conta?</span>
-            <div className="flex flex-col gap-2">
-              <Link
-                href="/cadastro?type=nanny"
-                className="underline underline-offset-4 hover:text-gray-900"
-              >
-                Cadastrar como Babá
-              </Link>
-              <Link
-                href="/cadastro?type=family"
-                className="underline underline-offset-4 hover:text-gray-900"
-              >
-                Cadastrar como Família
-              </Link>
-            </div>
+            <Link
+              href="/cadastro"
+              className="underline underline-offset-4 hover:text-gray-900"
+            >
+              Criar conta
+            </Link>
           </div>
         </Field>
       </FieldGroup>

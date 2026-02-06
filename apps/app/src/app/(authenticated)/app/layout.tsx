@@ -5,7 +5,7 @@
 
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { ProfileSetupWidget } from '@/components/profile-setup-widget';
-import { getCurrentUser } from '@/lib/auth/getCurrentUser';
+import { getCurrentUserOrUntyped } from '@/lib/auth/getCurrentUser';
 import { redirect } from 'next/navigation';
 
 export default async function AppLayout({
@@ -13,11 +13,16 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const user = await getCurrentUserOrUntyped();
 
   // Redirect to login if not authenticated
   if (!user) {
     redirect('/login');
+  }
+
+  // Redirect untyped users to onboarding (type selection)
+  if (user.type === 'untyped') {
+    redirect('/app/onboarding');
   }
 
   // Check if nanny needs onboarding

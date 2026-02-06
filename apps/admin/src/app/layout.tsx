@@ -29,7 +29,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'Cuidly Ops - Painel Administrativo',
+  title: 'Cuidly Admin - Painel Administrativo',
   icons: {
     icon: [
       {

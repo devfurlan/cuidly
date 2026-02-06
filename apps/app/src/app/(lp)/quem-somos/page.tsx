@@ -164,10 +164,10 @@ export default function QuemSomosPage() {
             Junte-se a centenas de famílias e babás que já confiam na Cuidly
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/cadastro?type=family">
+            <Link href="/cadastro">
               <Button size="lg">Cadastrar como Família</Button>
             </Link>
-            <Link href="/cadastro?type=nanny">
+            <Link href="/cadastro">
               <Button size="lg" variant="outline">Cadastrar como Babá</Button>
             </Link>
           </div>

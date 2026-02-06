@@ -38,7 +38,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/cadastro?type=family"
+                  href="/cadastro"
                   className="transition hover:text-white"
                 >
                   Cadastrar
@@ -58,7 +58,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/cadastro?type=nanny"
+                  href="/cadastro"
                   className="transition hover:text-white"
                 >
                   Cadastrar

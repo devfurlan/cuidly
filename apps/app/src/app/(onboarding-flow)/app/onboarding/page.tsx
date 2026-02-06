@@ -44,7 +44,9 @@ export default function OnboardingPage() {
         }
 
         // Redirect based on role
-        if (userData.role === 'NANNY') {
+        if (userData.role === 'UNTYPED') {
+          router.push('/app/onboarding/select-type');
+        } else if (userData.role === 'NANNY') {
           router.push('/app/onboarding/nanny');
         } else if (userData.role === 'FAMILY') {
           router.push('/app/onboarding/family');

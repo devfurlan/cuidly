@@ -10,11 +10,18 @@ export type CurrentUser =
   | { type: 'family'; family: FamilyWithSubscription; authId: string }
   | null;
 
+export type CurrentUserOrUntyped =
+  | { type: 'nanny'; nanny: NannyWithSubscription; authId: string }
+  | { type: 'family'; family: FamilyWithSubscription; authId: string }
+  | { type: 'untyped'; authId: string }
+  | null;
+
 export type CurrentUserType = 'nanny' | 'family';
 
 /**
  * Gets the current authenticated user from the database.
  * Returns either a Nanny or Family based on which table has the authId.
+ * Returns null if not authenticated OR if no Nanny/Family record exists.
  */
 export async function getCurrentUser(): Promise<CurrentUser> {
   const supabase = await createClient();
@@ -39,6 +46,37 @@ export async function getCurrentUser(): Promise<CurrentUser> {
   if (family) return { type: 'family', family, authId: user.id };
 
   return null;
+}
+
+/**
+ * Gets the current user, distinguishing between unauthenticated (null)
+ * and authenticated-but-no-record ('untyped').
+ * Use this only in routes that need to handle untyped users (e.g., /api/user/me, /api/auth/me).
+ */
+export async function getCurrentUserOrUntyped(): Promise<CurrentUserOrUntyped> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  // Try to find as Nanny
+  const nanny = await prisma.nanny.findUnique({
+    where: { authId: user.id },
+    include: { subscription: true },
+  });
+  if (nanny) return { type: 'nanny', nanny, authId: user.id };
+
+  // Try to find as Family
+  const family = await prisma.family.findUnique({
+    where: { authId: user.id },
+    include: { subscription: true },
+  });
+  if (family) return { type: 'family', family, authId: user.id };
+
+  // Authenticated but no record yet
+  return { type: 'untyped', authId: user.id };
 }
 
 /**

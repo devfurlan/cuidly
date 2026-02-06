@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth/getCurrentUser';
+import { getCurrentUserOrUntyped } from '@/lib/auth/getCurrentUser';
 
 /**
  * GET /api/user/me
@@ -7,10 +7,18 @@ import { getCurrentUser } from '@/lib/auth/getCurrentUser';
  */
 export async function GET() {
   try {
-    const currentUser = await getCurrentUser();
+    const currentUser = await getCurrentUserOrUntyped();
 
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (currentUser.type === 'untyped') {
+      return NextResponse.json({
+        authId: currentUser.authId,
+        role: 'UNTYPED',
+        onboardingCompleted: false,
+      });
     }
 
     if (currentUser.type === 'nanny') {
