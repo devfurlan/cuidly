@@ -1,0 +1,13 @@
+{
+  "name": "@cuidly/prettier-config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "peerDependencies": {
+    "prettier": ">=3",
+    "prettier-plugin-tailwindcss": ">=0.6"
+  }
+}

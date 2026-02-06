@@ -1,0 +1,42 @@
+{
+  "name": "cuidly",
+  "packageManager": "pnpm@10.25.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "pnpm --filter @cuidly/app test",
+    "test:watch": "pnpm --filter @cuidly/app test:watch",
+    "test:coverage": "pnpm --filter @cuidly/app test:coverage",
+    "build:app": "pnpm --filter @cuidly/app build",
+    "build:admin": "pnpm --filter @cuidly/admin build",
+    "dev:app": "pnpm --filter @cuidly/app dev",
+    "dev:admin": "pnpm --filter @cuidly/admin dev",
+    "db:migrate": "pnpm --filter @cuidly/database migrate:dev",
+    "db:migrate:deploy": "pnpm --filter @cuidly/database migrate",
+    "db:generate": "pnpm --filter @cuidly/database generate",
+    "db:seed": "pnpm --filter @cuidly/database seed"
+  },
+  "private": true,
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "turbo": "^2.6.0"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
+    "pg": "^8.16.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "react-is": "^19.0.0-rc-69d4b800-20241021"
+    },
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

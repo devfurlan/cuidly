@@ -1,0 +1,1503 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ADMIN USER - Tabela separada para admins
+// ============================================
+
+model AdminUser {
+  id                   String            @id @default(uuid()) @db.Uuid
+  email                String            @unique
+  name                 String?
+  photoUrl             String?           @map("photo_url")
+  isSuperAdmin         Boolean           @default(false) @map("is_super_admin")
+  permissions          AdminPermission[] @default([])
+  notifyFailedPayments Boolean           @default(false) @map("notify_failed_payments")
+  status               CommonStatus      @default(ACTIVE)
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime?         @updatedAt @map("updated_at")
+  deletedAt            DateTime?         @map("deleted_at")
+
+  auditLogs      AuditLog[]
+  moderationLogs ModerationLog[] @relation("ModeratorLogs")
+  couponsCreated Coupon[]        @relation("CouponCreator")
+  reportActions  Report[]        @relation("ReportActionTaker")
+
+  @@index([email])
+  @@index([status])
+  @@map("admin_users")
+}
+
+// ============================================
+// NANNY - Agora com campos de auth
+// ============================================
+
+model Nanny {
+  id                                  Int                       @id @default(autoincrement())
+  authId                              String?                   @unique @map("auth_id") @db.Uuid
+  name                                String?
+  slug                                String?                   @unique
+  birthDate                           DateTime?                 @map("birth_date") @db.Date
+  cpf                                 String?
+  cpfHash                             String?                   @map("cpf_hash")
+  phoneNumber                         String?                   @map("phone_number")
+  emailAddress                        String?                   @map("email_address")
+  addressId                           Int?                      @map("address_id")
+  gender                              Gender?
+  photoUrl                            String?                   @map("photo_url")
+  isSmoker                            Boolean                   @default(false) @map("is_smoker")
+  maritalStatus                       MaritalStatus?            @map("marital_status")
+  hasChildren                         Boolean?                  @map("has_children")
+  hasCnh                              Boolean?                  @map("has_cnh")
+  pixKey                              String?                   @map("pix_key")
+  pixType                             PixType?                  @map("pix_type")
+  status                              CommonStatus              @default(PENDING)
+  experienceYears                     Int?                      @map("experience_years")
+  minChildAge                         Int?                      @map("min_child_age")
+  maxChildAge                         Int?                      @map("max_child_age")
+  hourlyRate                          Decimal?                  @map("hourly_rate") @db.Decimal(10, 2)
+  dailyRate                           Decimal?                  @map("daily_rate") @db.Decimal(10, 2)
+  monthlyRate                         Decimal?                  @map("monthly_rate") @db.Decimal(10, 2)
+  aboutMe                             String?                   @map("about_me")
+  availabilityJson                    Json?                     @map("availability_json")
+  specialtiesJson                     Json?                     @map("specialties_json")
+  skillsJson                          Json?                     @map("skills_json")
+  serviceTypesJson                    Json?                     @map("service_types_json")
+  attendanceModesJson                 Json?                     @map("attendance_modes_json")
+  maxTravelDistance                   MaxTravelDistance?        @map("max_travel_distance")
+  ageRangesExperience                 String[]                  @default([]) @map("age_ranges_experience")
+  hasSpecialNeedsExperience           Boolean                   @default(false) @map("has_special_needs_experience")
+  specialNeedsExperienceDescription   String?                   @map("special_needs_experience_description")
+  specialNeedsSpecialties             String[]                  @default([]) @map("special_needs_specialties")
+  certifications                      String[]                  @default([])
+  languages                           String[]                  @default([])
+  childTypePreference                 String[]                  @default([]) @map("child_type_preference")
+  strengths                           String[]                  @default([])
+  careMethodology                     String?                   @map("care_methodology")
+  hasVehicle                          Boolean                   @default(false) @map("has_vehicle")
+  comfortableWithPets                 ComfortWithPets?          @map("comfortable_with_pets")
+  petsDescription                     String?                   @map("pets_description")
+  acceptedActivities                  String[]                  @default([]) @map("accepted_activities")
+  environmentPreference               String?                   @map("environment_preference")
+  parentPresencePreference            ParentPresencePreference? @map("parent_presence_preference")
+  maxChildrenCare                     Int?                      @map("max_children_care")
+  hasReferences                       Boolean                   @default(false) @map("has_references")
+  referencesVerified                  Boolean                   @default(false) @map("references_verified")
+  acceptsHolidayWork                  AcceptsHolidayWork?       @map("accepts_holiday_work")
+  hourlyRateReference                 Decimal?                  @map("hourly_rate_reference") @db.Decimal(10, 2)
+  nannyTypes                          String[]                  @default([]) @map("nanny_types")
+  contractRegimes                     String[]                  @default([]) @map("contract_regimes")
+  hourlyRateRange                     String?                   @map("hourly_rate_range")
+  activitiesNotAccepted               String[]                  @default([]) @map("activities_not_accepted")
+  birthCity                           String?                   @map("birth_city")
+  birthState                          String?                   @map("birth_state") @db.Char(2)
+  motherName                          String?                   @map("mother_name")
+  documentValidated                   Boolean                   @default(false) @map("document_validated")
+  documentValidationDate              DateTime?                 @map("document_validation_date")
+  documentValidationMessage           String?                   @map("document_validation_message")
+  documentType                        String?                   @map("document_type")
+  documentExpirationDate              DateTime?                 @map("document_expiration_date") @db.Date
+  criminalBackgroundValidated         Boolean                   @default(false) @map("criminal_background_validated")
+  criminalBackgroundValidationDate    DateTime?                 @map("criminal_background_validation_date")
+  criminalBackgroundValidationMessage String?                   @map("criminal_background_validation_message")
+  personalDataValidated               Boolean                   @default(false) @map("personal_data_validated")
+  personalDataValidatedAt             DateTime?                 @map("personal_data_validated_at")
+  personalDataValidatedBy             String?                   @map("personal_data_validated_by")
+  // Auth fields (migrados de User)
+  termsAccepted                       Boolean?                  @map("terms_accepted")
+  termsAcceptedAt                     DateTime?                 @map("terms_accepted_at")
+  termsAcceptedIp                     String?                   @map("terms_accepted_ip")
+  welcomeModalShown                   Boolean                   @default(false) @map("welcome_modal_shown")
+  welcomeModalShownAt                 DateTime?                 @map("welcome_modal_shown_at")
+  emailVerified                       Boolean                   @default(false) @map("email_verified")
+  emailVerificationCode               String?                   @map("email_verification_code")
+  emailVerificationToken              String?                   @unique @map("email_verification_token")
+  emailVerificationSent               DateTime?                 @map("email_verification_sent")
+  emailVerifiedAt                     DateTime?                 @map("email_verified_at")
+  onboardingCompleted                 Boolean                   @default(false) @map("onboarding_completed")
+  onboardingCompletedAt               DateTime?                 @map("onboarding_completed_at")
+  createdAt                           DateTime                  @default(now()) @map("created_at")
+  updatedAt                           DateTime?                 @updatedAt @map("updated_at")
+  deletedAt                           DateTime?                 @map("deleted_at")
+  lastActivityAt                      DateTime?                 @map("last_activity_at")
+  isProfilePublic                     Boolean                   @default(true) @map("is_profile_public")
+
+  address           Address?           @relation(fields: [addressId], references: [id])
+  documents         Document[]
+  subscription      Subscription?
+  boosts            Boost[]
+  profileAnalytics  ProfileAnalytics[]
+  favorites         Favorite[]
+  references        Reference[]
+  availability      NannyAvailability?
+  jobApplications   JobApplication[]
+  profileViews      UserProfileView[]
+  validationRequest ValidationRequest?
+  documentUploads   DocumentUpload[]
+  reviews           Review[]
+  participants      Participant[]
+  messagesSent      Message[]
+  notifications     Notification[]
+  payments          Payment[]
+  couponUsages      CouponUsage[]
+  reportsReceived             Report[]                    @relation("ReportedNanny")
+  reportsSubmitted            Report[]                    @relation("NannyReporter")
+  validationConsentLogs       ValidationConsentLog[]
+  couponAllowedEmails         CouponAllowedEmail[]
+  incompleteProfileEmailLogs  IncompleteProfileEmailLog[]
+  compatibleJobEmailLogs      CompatibleJobEmailLog[]     @relation("CompatibleJobEmailLogs")
+
+  @@index([authId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([addressId])
+  @@index([status, createdAt])
+  @@index([documentValidated])
+  @@index([personalDataValidated])
+  @@map("nannies")
+}
+
+model Reference {
+  id           Int       @id @default(autoincrement())
+  nannyId      Int       @map("nanny_id")
+  name         String
+  phone        String
+  relationship String
+  verified     Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@map("references")
+}
+
+model NannyAvailability {
+  id                     Int                 @id @default(autoincrement())
+  nannyId                Int                 @unique @map("nanny_id")
+  jobTypes               JobType[]           @default([]) @map("job_types")
+  schedule               Json
+  schedulePreference     SchedulePreference? @map("schedule_preference")
+  acceptsOvernight       AcceptsOvernight?   @map("accepts_overnight")
+  availableFrom          DateTime            @map("available_from")
+  monthlyRate            Decimal?            @map("monthly_rate") @db.Decimal(10, 2)
+  hourlyRate             Decimal?            @map("hourly_rate") @db.Decimal(10, 2)
+  dailyRate              Decimal?            @map("daily_rate") @db.Decimal(10, 2)
+  preferredContractTypes ContractType[]      @default([]) @map("preferred_contract_types")
+  allowsMultipleJobs     AllowsMultipleJobs? @map("allows_multiple_jobs")
+  lastUpdated            DateTime            @default(now()) @map("last_updated")
+  createdAt              DateTime            @default(now()) @map("created_at")
+  updatedAt              DateTime?           @updatedAt @map("updated_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@map("nanny_availabilities")
+}
+
+model Child {
+  id                      Int          @id @default(autoincrement())
+  name                    String?
+  birthDate               DateTime?    @map("birth_date") @db.Date
+  gender                  Gender?
+  status                  CommonStatus @default(ACTIVE)
+  expectedBirthDate       DateTime?    @map("expected_birth_date") @db.Date
+  unborn                  Boolean      @default(false)
+  carePriorities          String[]     @default([]) @map("care_priorities")
+  allergies               String?
+  specialNeeds            String?      @map("special_needs")
+  notes                   String?
+  hasSpecialNeeds         Boolean      @default(false) @map("has_special_needs")
+  specialNeedsDescription String?      @map("special_needs_description")
+  specialNeedsTypes       String[]     @default([]) @map("special_needs_types")
+  routine                 String?
+  createdAt               DateTime     @default(now()) @map("created_at")
+  updatedAt               DateTime?    @updatedAt @map("updated_at")
+  deletedAt               DateTime?    @map("deleted_at")
+
+  families ChildFamily[]
+
+  @@map("children")
+}
+
+// ============================================
+// FAMILY - Agora com campos de auth
+// ============================================
+
+model Family {
+  id                    Int                   @id @default(autoincrement())
+  authId                String?               @unique @map("auth_id") @db.Uuid
+  addressId             Int?                  @map("address_id")
+  name                  String
+  cpf                   String?
+  cpfHash               String?               @map("cpf_hash")
+  birthDate             DateTime?             @map("birth_date") @db.Date
+  gender                Gender?
+  phoneNumber           String?               @map("phone_number")
+  emailAddress          String?               @map("email_address")
+  photoUrl              String?               @map("photo_url")
+  numberOfChildren      Int?                  @map("number_of_children")
+  status                CommonStatus          @default(ACTIVE)
+  housingType           HousingType?          @map("housing_type")
+  hasPets               Boolean               @default(false) @map("has_pets")
+  petTypes              String[]              @default([]) @map("pet_types")
+  petsDescription       String?               @map("pets_description")
+  parentPresence        ParentPresence?       @map("parent_presence")
+  valuesInNanny         String[]              @default([]) @map("values_in_nanny")
+  careMethodology       String?               @map("care_methodology")
+  languages             String[]              @default([])
+  houseRules            String[]              @default([]) @map("house_rules")
+  domesticHelpExpected  String[]              @default([]) @map("domestic_help_expected")
+  nannyGenderPreference GenderPreference?     @map("nanny_gender_preference")
+  nannyAgePreference    AgePreference?        @map("nanny_age_preference")
+  nannyType             FamilyNannyType?      @map("nanny_type")
+  contractRegime        FamilyContractRegime? @map("contract_regime")
+  familyPresentation    String?               @map("family_presentation") @db.Text
+  jobDescription        String?               @map("job_description") @db.Text
+  jobPhotos             String[]              @default([]) @map("job_photos")
+  neededDays            String[]              @default([]) @map("needed_days")
+  neededShifts          String[]              @default([]) @map("needed_shifts")
+  requiresNonSmoker     Boolean               @default(false) @map("requires_non_smoker")
+  requiresDriverLicense Boolean               @default(false) @map("requires_driver_license")
+  hourlyRateRange       String?               @map("hourly_rate_range")
+  // Auth fields (migrados de User)
+  termsAccepted         Boolean?              @map("terms_accepted")
+  termsAcceptedAt       DateTime?             @map("terms_accepted_at")
+  termsAcceptedIp       String?               @map("terms_accepted_ip")
+  welcomeModalShown     Boolean               @default(false) @map("welcome_modal_shown")
+  welcomeModalShownAt   DateTime?             @map("welcome_modal_shown_at")
+  emailVerified         Boolean               @default(false) @map("email_verified")
+  emailVerificationCode String?               @map("email_verification_code")
+  emailVerificationToken String?              @unique @map("email_verification_token")
+  emailVerificationSent DateTime?             @map("email_verification_sent")
+  emailVerifiedAt       DateTime?             @map("email_verified_at")
+  onboardingCompleted   Boolean               @default(false) @map("onboarding_completed")
+  onboardingCompletedAt DateTime?             @map("onboarding_completed_at")
+  createdAt             DateTime              @default(now()) @map("created_at")
+  updatedAt             DateTime?             @updatedAt @map("updated_at")
+  deletedAt             DateTime?             @map("deleted_at")
+  lastActivityAt        DateTime?             @map("last_activity_at")
+
+  address             Address?             @relation(fields: [addressId], references: [id])
+  children            ChildFamily[]
+  subscription        Subscription?
+  favorites           Favorite[]
+  documents           Document[]
+  jobs                Job[]
+  reviews             Review[]
+  participants        Participant[]
+  messagesSent        Message[]
+  notifications       Notification[]
+  payments            Payment[]
+  couponUsages        CouponUsage[]
+  reportsSubmitted    Report[]             @relation("FamilyReporter")
+  couponAllowedEmails CouponAllowedEmail[]
+
+  @@index([authId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([addressId])
+  @@map("families")
+}
+
+model ChildFamily {
+  childId          Int               @map("child_id")
+  familyId         Int               @map("family_id")
+  relationshipType RelationshipType?
+  isMain           Boolean           @default(false) @map("is_main")
+
+  child  Child  @relation(fields: [childId], references: [id])
+  family Family @relation(fields: [familyId], references: [id])
+
+  @@id([childId, familyId])
+  @@map("children_families")
+}
+
+model Job {
+  id                    Int               @id @default(autoincrement())
+  familyId              Int               @map("family_id")
+  title                 String
+  description           String?
+  jobType               JobType           @map("job_type")
+  schedule              Json
+  requiresOvernight     RequiresOvernight @map("requires_overnight")
+  contractType          ContractType      @map("contract_type")
+  benefits              String[]          @default([])
+  paymentType           JobPaymentType    @map("payment_type")
+  budgetMin             Decimal           @map("budget_min") @db.Decimal(10, 2)
+  budgetMax             Decimal           @map("budget_max") @db.Decimal(10, 2)
+  childrenIds           Int[]             @default([]) @map("children_ids")
+  mandatoryRequirements String[]          @default([]) @map("mandatory_requirements")
+  photos                String[]          @default([])
+  allowsMultipleJobs    Boolean           @default(true) @map("allows_multiple_jobs")
+  startDate             DateTime          @map("start_date")
+  status                JobStatus         @default(ACTIVE)
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime?         @updatedAt @map("updated_at")
+  deletedAt             DateTime?         @map("deleted_at")
+
+  family                 Family                  @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  applications           JobApplication[]
+  boosts                 Boost[]
+  conversations          Conversation[]
+  reports                Report[]                @relation("ReportedJob")
+  notifications          Notification[]
+  compatibleJobEmailLogs CompatibleJobEmailLog[] @relation("CompatibleJobEmailLogs")
+
+  @@index([familyId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([status, createdAt])
+  @@map("jobs")
+}
+
+model JobApplication {
+  id         Int                  @id @default(autoincrement())
+  jobId      Int                  @map("job_id")
+  nannyId    Int                  @map("nanny_id")
+  status     JobApplicationStatus @default(PENDING)
+  matchScore Decimal?             @map("match_score") @db.Decimal(5, 2)
+  message    String?
+  createdAt  DateTime             @default(now()) @map("created_at")
+  updatedAt  DateTime?            @updatedAt @map("updated_at")
+
+  job   Job   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, nannyId])
+  @@index([jobId])
+  @@index([nannyId])
+  @@index([status])
+  @@map("job_applications")
+}
+
+model CompatibleJobEmailLog {
+  id      String   @id @default(cuid())
+  nannyId Int      @map("nanny_id")
+  jobId   Int      @map("job_id")
+  sentAt  DateTime @default(now()) @map("sent_at")
+
+  nanny Nanny @relation("CompatibleJobEmailLogs", fields: [nannyId], references: [id], onDelete: Cascade)
+  job   Job   @relation("CompatibleJobEmailLogs", fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([nannyId, jobId])
+  @@index([nannyId])
+  @@index([jobId])
+  @@index([sentAt])
+  @@map("compatible_job_email_logs")
+}
+
+model Address {
+  id           Int          @id @default(autoincrement())
+  zipCode      String       @map("zip_code") @db.Char(8)
+  streetName   String       @map("street_name")
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String
+  state        String       @db.Char(2)
+  country      String       @default("Brazil")
+  status       CommonStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime?    @updatedAt @map("updated_at")
+  deletedAt    DateTime?    @map("deleted_at")
+  latitude     Float?
+  longitude    Float?
+
+  families Family[]
+  nannies  Nanny[]
+
+  @@map("addresses")
+}
+
+model Document {
+  id               Int              @id @default(autoincrement())
+  nannyId          Int?             @map("nanny_id")
+  familyId         Int?             @map("family_id")
+  documentType     DocumentType?    @map("document_type")
+  identifier       String
+  fileUrl          String?          @map("file_url")
+  textOcr          String?          @map("text_ocr")
+  institutionName  String?          @map("institution_name")
+  certificateType  CertificateType? @map("certificate_type")
+  issuedBy         String?          @map("issued_by")
+  stateIssued      String?          @map("state_issued")
+  issueDate        DateTime?        @map("issue_date") @db.Date
+  expirationDate   DateTime?        @map("expiration_date") @db.Date
+  validationStatus String?          @map("validation_status")
+  status           CommonStatus     @default(ACTIVE)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @updatedAt @map("updated_at")
+  deletedAt        DateTime?        @map("deleted_at")
+
+  family Family? @relation(fields: [familyId], references: [id])
+  nanny  Nanny?  @relation(fields: [nannyId], references: [id])
+
+  @@map("documents")
+}
+
+model Plan {
+  id           Int          @id @default(autoincrement())
+  name         String
+  type         PlanType
+  price        Decimal      @db.Decimal(10, 2)
+  billingCycle BillingCycle @map("billing_cycle")
+  features     Json
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime?    @updatedAt @map("updated_at")
+
+  @@map("plans")
+}
+
+model Boost {
+  id        Int         @id @default(autoincrement())
+  nannyId   Int?        @map("nanny_id")
+  jobId     Int?        @map("job_id")
+  type      BoostType
+  startDate DateTime    @map("start_date")
+  endDate   DateTime    @map("end_date")
+  isActive  Boolean     @default(true) @map("is_active")
+  source    BoostSource
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  nanny Nanny? @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  job   Job?   @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@index([jobId])
+  @@index([isActive, endDate])
+  @@index([type, isActive, endDate])
+  @@map("boosts")
+}
+
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  familyId  Int      @map("family_id")
+  nannyId   Int      @map("nanny_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  family Family @relation(fields: [familyId], references: [id])
+  nanny  Nanny  @relation(fields: [nannyId], references: [id])
+
+  @@unique([familyId, nannyId])
+  @@index([familyId])
+  @@index([nannyId])
+  @@map("favorites")
+}
+
+model ProfileAnalytics {
+  id             Int               @id @default(autoincrement())
+  nannyId        Int               @map("nanny_id")
+  actionType     ProfileActionType @map("action_type")
+  visitorIp      String?           @map("visitor_ip")
+  visitorCity    String?           @map("visitor_city")
+  visitorState   String?           @map("visitor_state") @db.Char(2)
+  visitorCountry String?           @map("visitor_country")
+  userAgent      String?           @map("user_agent")
+  deviceType     String?           @map("device_type")
+  browser        String?
+  referrer       String?
+  sessionId      String?           @map("session_id")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id])
+
+  @@index([nannyId])
+  @@index([actionType])
+  @@index([createdAt])
+  @@index([nannyId, actionType])
+  @@index([nannyId, createdAt])
+  @@map("profile_analytics")
+}
+
+model BioCache {
+  id               Int      @id @default(autoincrement())
+  cacheKey         String   @unique @map("cache_key")
+  biography        String
+  sentimentScore   Float?   @map("sentiment_score")
+  professionalism  Int?
+  warmth           Int?
+  confidence       Int?
+  clarity          Int?
+  concerns         Json?
+  suggestions      Json?
+  passesValidation Boolean  @default(true) @map("passes_validation")
+  usageCount       Int      @default(1) @map("usage_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  expiresAt        DateTime @map("expires_at")
+
+  @@index([cacheKey])
+  @@index([expiresAt])
+  @@map("bio_cache")
+}
+
+model UserProfileView {
+  id          Int             @id @default(autoincrement())
+  visitorId   String?         @map("visitor_id")
+  visitorNannyId  Int?        @map("visitor_nanny_id")
+  visitorFamilyId Int?        @map("visitor_family_id")
+  nannyId     Int             @map("nanny_id")
+  viewerType  ProfileViewType @default(ANONYMOUS) @map("viewer_type")
+  hasPaidPlan Boolean         @default(false) @map("has_paid_plan")
+  viewedAt    DateTime        @default(now()) @map("viewed_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([visitorNannyId])
+  @@index([visitorFamilyId])
+  @@index([visitorId])
+  @@index([nannyId])
+  @@index([viewedAt])
+  @@map("user_profile_views")
+}
+
+// ============================================
+// SUBSCRIPTION - Agora com nannyId/familyId
+// ============================================
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  nannyId                Int?               @unique @map("nanny_id")
+  familyId               Int?               @unique @map("family_id")
+  plan                   SubscriptionPlan
+  billingInterval        BillingInterval?   @map("billing_interval")
+  status                 SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart     DateTime           @map("current_period_start")
+  currentPeriodEnd       DateTime           @map("current_period_end")
+  cancelAtPeriodEnd      Boolean             @default(false) @map("cancel_at_period_end")
+  canceledAt             DateTime?           @map("canceled_at")
+  cancellationReason     CancellationReason? @map("cancellation_reason")
+  cancellationFeedback   String?             @map("cancellation_feedback") @db.Text
+  paymentGateway         PaymentGateway      @default(ASAAS) @map("payment_gateway")
+  externalCustomerId     String?            @map("external_customer_id")
+  externalSubscriptionId String?            @map("external_subscription_id")
+  appliedCouponId        String?            @map("applied_coupon_id")
+  discountAmount         Float?             @map("discount_amount")
+  trialEndDate           DateTime?          @map("trial_end_date")
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  nanny                   Nanny?                     @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  family                  Family?                    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  payments                Payment[]
+  appliedCoupon           Coupon?                    @relation(fields: [appliedCouponId], references: [id])
+  couponUsages            CouponUsage[]
+  cancellationEmailLogs   CancellationEmailLog[]
+  pendingOperations       PendingPaymentOperation[]
+
+  @@index([nannyId])
+  @@index([familyId])
+  @@index([status])
+  @@index([externalSubscriptionId])
+  @@index([cancelAtPeriodEnd, status])
+  @@map("subscriptions")
+}
+
+// ============================================
+// PAYMENT - Agora com nannyId/familyId
+// ============================================
+
+model Payment {
+  id                 String         @id @default(cuid())
+  nannyId            Int?           @map("nanny_id")
+  familyId           Int?           @map("family_id")
+  subscriptionId     String?        @map("subscription_id")
+  amount             Float
+  currency           String         @default("BRL")
+  status             PaymentStatus  @default(PENDING)
+  type               PaymentType
+  description        String?
+  paymentGateway     PaymentGateway @map("payment_gateway")
+  externalPaymentId  String?        @map("external_payment_id")
+  externalInvoiceUrl String?        @map("external_invoice_url")
+  paymentMethod      PaymentMethod? @map("payment_method")
+  paidAt             DateTime?      @map("paid_at")
+  metadata           Json?          @map("metadata")
+  createdAt          DateTime       @default(now()) @map("created_at")
+
+  nanny                Nanny?                     @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  family               Family?                    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  subscription         Subscription?              @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  pixReminderEmailLogs PixReminderEmailLog[]
+  pendingOperations    PendingPaymentOperation[]
+
+  @@index([nannyId])
+  @@index([familyId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([externalPaymentId])
+  @@map("payments")
+}
+
+// ============================================
+// PENDING PAYMENT OPERATION - Sistema de Retry
+// ============================================
+
+model PendingPaymentOperation {
+  id             String                 @id @default(cuid())
+  type           PaymentOperationType
+  subscriptionId String?                @map("subscription_id")
+  paymentId      String?                @map("payment_id")
+  externalId     String?                @map("external_id")
+  operationData  Json?                  @map("operation_data")
+  status         PendingOperationStatus @default(PENDING)
+  attempts       Int                    @default(0)
+  maxAttempts    Int                    @default(5) @map("max_attempts")
+  lastAttemptAt  DateTime?              @map("last_attempt_at")
+  lastError      String?                @map("last_error")
+  completedAt    DateTime?              @map("completed_at")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  payment      Payment?      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([status, lastAttemptAt])
+  @@index([subscriptionId])
+  @@index([paymentId])
+  @@index([type])
+  @@map("pending_payment_operations")
+}
+
+model Coupon {
+  id                 String             @id @default(cuid())
+  code               String             @unique
+  description        String?
+  discountType       DiscountType       @map("discount_type")
+  discountValue      Float              @map("discount_value")
+  maxDiscount        Float?             @map("max_discount")
+  minPurchaseAmount  Float?             @map("min_purchase_amount")
+  usageLimit         Int?               @map("usage_limit")
+  usageCount         Int                @default(0) @map("usage_count")
+  applicableTo       CouponApplicableTo @default(ALL) @map("applicable_to")
+  applicablePlanIds  String[]           @default([]) @map("applicable_plan_ids")
+  hasUserRestriction Boolean            @default(false) @map("has_user_restriction")
+  startDate          DateTime           @map("start_date")
+  endDate            DateTime           @map("end_date")
+  isActive           Boolean            @default(true) @map("is_active")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
+  createdById        String?            @map("created_by_id") @db.Uuid
+
+  createdBy     AdminUser?          @relation("CouponCreator", fields: [createdById], references: [id])
+  usages        CouponUsage[]
+  subscriptions Subscription[]
+  allowedEmails CouponAllowedEmail[]
+
+  @@index([code])
+  @@index([isActive, startDate, endDate])
+  @@map("coupons")
+}
+
+model CouponUsage {
+  id             String   @id @default(cuid())
+  couponId       String   @map("coupon_id")
+  nannyId        Int?     @map("nanny_id")
+  familyId       Int?     @map("family_id")
+  subscriptionId String?  @map("subscription_id")
+  discountAmount Float    @map("discount_amount")
+  usedAt         DateTime @default(now()) @map("used_at")
+
+  coupon       Coupon        @relation(fields: [couponId], references: [id])
+  nanny        Nanny?        @relation(fields: [nannyId], references: [id])
+  family       Family?       @relation(fields: [familyId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([couponId])
+  @@index([nannyId])
+  @@index([familyId])
+  @@map("coupon_usages")
+}
+
+model CouponAllowedEmail {
+  id       String   @id @default(cuid())
+  couponId String   @map("coupon_id")
+  email    String
+  nannyId  Int?     @map("nanny_id")
+  familyId Int?     @map("family_id")
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  coupon Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  nanny  Nanny?  @relation(fields: [nannyId], references: [id])
+  family Family? @relation(fields: [familyId], references: [id])
+
+  @@unique([couponId, email])
+  @@index([couponId])
+  @@index([email])
+  @@map("coupon_allowed_emails")
+}
+
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  table       String
+  action      String
+  recordId    String    @map("record_id")
+  data        Json?
+  adminUserId String?   @map("admin_user_id") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id])
+
+  @@index([adminUserId])
+  @@index([table])
+  @@index([action])
+  @@index([createdAt])
+  @@index([table, recordId])
+  @@index([adminUserId, createdAt])
+  @@map("audit_logs")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  jobId     Int?     @map("job_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Campos desnormalizados para listagem eficiente
+  lastMessageId      String?   @map("last_message_id")
+  lastMessageAt      DateTime? @map("last_message_at")
+  lastMessagePreview String?   @map("last_message_preview") @db.VarChar(100)
+
+  job          Job?          @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  participants Participant[]
+  messages     Message[]
+
+  @@index([jobId])
+  @@index([lastMessageAt(sort: Desc)])
+  @@map("conversations")
+}
+
+// ============================================
+// PARTICIPANT - Agora com nannyId/familyId
+// ============================================
+
+model Participant {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  nannyId        Int?     @map("nanny_id")
+  familyId       Int?     @map("family_id")
+  joinedAt       DateTime @default(now()) @map("joined_at")
+
+  // Read tracking por participante
+  lastReadAt        DateTime? @map("last_read_at")
+  lastReadMessageId String?   @map("last_read_message_id")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  nanny        Nanny?       @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  family       Family?      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([nannyId, conversationId])
+  @@unique([familyId, conversationId])
+  @@index([conversationId])
+  @@index([nannyId])
+  @@index([familyId])
+  @@index([conversationId, lastReadAt])
+  @@map("participants")
+}
+
+// ============================================
+// MESSAGE - Agora com senderNannyId/senderFamilyId
+// ============================================
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String    @map("conversation_id")
+  senderNannyId  Int?      @map("sender_nanny_id")
+  senderFamilyId Int?      @map("sender_family_id")
+  body           String    @db.Text
+  seq            BigInt    @default(autoincrement())
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderNanny  Nanny?       @relation(fields: [senderNannyId], references: [id], onDelete: Cascade)
+  senderFamily Family?      @relation(fields: [senderFamilyId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, seq])
+  @@index([conversationId])
+  @@index([senderNannyId])
+  @@index([senderFamilyId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Review {
+  id             Int        @id @default(autoincrement())
+  familyId       Int        @map("family_id")
+  nannyId        Int        @map("nanny_id")
+  type           ReviewType
+  punctuality    Int?
+  care           Int?
+  communication  Int?
+  reliability    Int?
+  respect        Int?
+  environment    Int?
+  payment        Int?
+  overallRating  Float      @map("overall_rating")
+  comment        String?    @db.Text
+  response       String?    @db.Text
+  respondedAt    DateTime?  @map("responded_at")
+  jobId          Int?       @map("job_id")
+  conversationId String?    @map("conversation_id")
+  isPublished    Boolean    @default(false) @map("is_published")
+  publishedAt    DateTime?  @map("published_at")
+  isVisible      Boolean    @default(true) @map("is_visible")
+  isReported     Boolean    @default(false) @map("is_reported")
+  moderatedAt    DateTime?  @map("moderated_at")
+  moderatedBy    String?    @map("moderated_by")
+  moderationNote String?    @map("moderation_note") @db.Text
+  photos         String[]   @default([])
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime?  @updatedAt @map("updated_at")
+
+  family         Family          @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  nanny          Nanny           @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  moderationLogs ModerationLog[]
+
+  @@unique([familyId, nannyId, type, jobId])
+  @@index([familyId])
+  @@index([nannyId])
+  @@index([type])
+  @@index([isPublished])
+  @@index([overallRating])
+  @@index([createdAt])
+  @@index([isPublished, createdAt])
+  @@map("reviews")
+}
+
+// ============================================
+// NOTIFICATION - Agora com nannyId/familyId
+// ============================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  nannyId   Int?             @map("nanny_id")
+  familyId  Int?             @map("family_id")
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  link      String?
+  isRead    Boolean          @default(false) @map("is_read")
+  readAt    DateTime?        @map("read_at")
+  reviewId  Int?             @map("review_id")
+  jobId     Int?             @map("job_id")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  nanny  Nanny?  @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  job    Job?    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@index([familyId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([jobId])
+  @@map("notifications")
+}
+
+model ModerationLog {
+  id             String           @id @default(cuid())
+  moderatorId    String           @map("moderator_id") @db.Uuid
+  reviewId       Int?             @map("review_id")
+  action         ModerationAction
+  reason         String?          @db.Text
+  reviewSnapshot Json?            @map("review_snapshot")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  moderator AdminUser @relation("ModeratorLogs", fields: [moderatorId], references: [id], onDelete: Cascade)
+  review    Review?   @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+
+  @@index([moderatorId])
+  @@index([reviewId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("moderation_logs")
+}
+
+model Report {
+  id               Int              @id @default(autoincrement())
+  targetType       ReportTargetType @map("target_type")
+  targetNannyId    Int?             @map("target_nanny_id")
+  targetJobId      Int?             @map("target_job_id")
+  reason           String           @db.Text
+
+  // Reporter info (nullable for anonymous)
+  reporterNannyId  Int?             @map("reporter_nanny_id")
+  reporterFamilyId Int?             @map("reporter_family_id")
+  reporterIp       String?          @map("reporter_ip")
+  reporterUserAgent String?         @map("reporter_user_agent") @db.Text
+
+  // Status and moderation
+  status           ReportStatus     @default(PENDING)
+
+  // Action taken (when reviewed)
+  action           ReportAction?
+  actionTakenAt    DateTime?        @map("action_taken_at")
+  actionTakenById  String?          @map("action_taken_by_id") @db.Uuid
+  actionNote       String?          @map("action_note") @db.Text
+
+  // Snapshot of target at report time
+  targetSnapshot   Json?            @map("target_snapshot")
+
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime?        @updatedAt @map("updated_at")
+
+  // Relations
+  targetNanny      Nanny?           @relation("ReportedNanny", fields: [targetNannyId], references: [id], onDelete: SetNull)
+  targetJob        Job?             @relation("ReportedJob", fields: [targetJobId], references: [id], onDelete: SetNull)
+  reporterNanny    Nanny?           @relation("NannyReporter", fields: [reporterNannyId], references: [id], onDelete: SetNull)
+  reporterFamily   Family?          @relation("FamilyReporter", fields: [reporterFamilyId], references: [id], onDelete: SetNull)
+  actionTakenBy    AdminUser?       @relation("ReportActionTaker", fields: [actionTakenById], references: [id], onDelete: SetNull)
+
+  @@index([targetType, status])
+  @@index([targetNannyId])
+  @@index([targetJobId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("reports")
+}
+
+model ValidationRequest {
+  id                  String           @id @default(cuid())
+  nannyId             Int              @unique @map("nanny_id")
+  cpf                 String
+  cpfHash             String?          @map("cpf_hash")
+  rg                  String?
+  rgIssuingState      String?          @map("rg_issuing_state") @db.Char(2)
+  name                String
+  motherName          String?          @map("mother_name")
+  fatherName          String?          @map("father_name")
+  birthDate           DateTime?        @map("birth_date") @db.Date
+  bigidResult         Json?            @map("bigid_result")
+  facematchScore      Float?           @map("facematch_score")
+  livenessScore       Float?           @map("liveness_score")
+  bigidValid          Boolean          @default(false) @map("bigid_valid")
+  level               ValidationLevel  @default(BASIC)
+  status              ValidationStatus @default(PENDING)
+  basicDataResult        Json?            @map("basic_data_result")
+  documentoscopiaResult  Json?            @map("documentoscopia_result")
+  civilRecordResult      Json?            @map("civil_record_result")
+  federalRecordResult    Json?            @map("federal_record_result")
+  backgroundCheckResult  Json?            @map("background_check_result")
+  reportUrl              String?          @map("report_url")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime?        @updatedAt @map("updated_at")
+  completedAt         DateTime?        @map("completed_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([level])
+  @@map("validation_requests")
+}
+
+model DocumentUpload {
+  id        String             @id @default(cuid())
+  nannyId   Int                @map("nanny_id")
+  type      DocumentUploadType
+  url       String
+  createdAt DateTime           @default(now()) @map("created_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@map("document_uploads")
+}
+
+model ValidationConsentLog {
+  id             String   @id @default(cuid())
+  nannyId        Int      @map("nanny_id")
+  validationType String   @map("validation_type")
+  ipAddress      String?  @map("ip_address")
+  requestedAt    DateTime @default(now()) @map("requested_at")
+
+  nanny Nanny @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@index([requestedAt])
+  @@map("validation_consent_logs")
+}
+
+// ============================================
+// SYSTEM CONFIG - Configurações do sistema
+// ============================================
+
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string") // string, number, boolean, json
+  label     String?
+  description String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}
+
+// ============================================
+// CANCELLATION EMAIL LOG - Tracking de e-mails de cancelamento
+// ============================================
+
+model CancellationEmailLog {
+  id             String                  @id @default(cuid())
+  subscriptionId String                  @map("subscription_id")
+  emailType      CancellationEmailType   @map("email_type")
+  sentAt         DateTime                @default(now()) @map("sent_at")
+
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, emailType])
+  @@index([subscriptionId])
+  @@map("cancellation_email_logs")
+}
+
+// ============================================
+// PIX REMINDER EMAIL LOG - Tracking de e-mails de lembrete PIX
+// ============================================
+
+model PixReminderEmailLog {
+  id        String               @id @default(cuid())
+  paymentId String               @map("payment_id")
+  emailType PixReminderEmailType @map("email_type")
+  sentAt    DateTime             @default(now()) @map("sent_at")
+
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@unique([paymentId, emailType])
+  @@index([paymentId])
+  @@map("pix_reminder_email_logs")
+}
+
+// ============================================
+// INCOMPLETE PROFILE EMAIL LOG - Tracking de e-mails de perfil incompleto
+// ============================================
+
+model IncompleteProfileEmailLog {
+  id        String   @id @default(cuid())
+  nannyId   Int      @map("nanny_id")
+  sentAt    DateTime @default(now()) @map("sent_at")
+
+  nanny     Nanny    @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+
+  @@index([nannyId])
+  @@index([sentAt])
+  @@map("incomplete_profile_email_logs")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum CommonStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+  COMMON_LAW
+}
+
+enum RelationshipType {
+  PARENT
+  GRANDPARENT
+  UNCLE_AUNT
+  GUARDIAN
+  OTHER
+}
+
+enum PixType {
+  CNPJ
+  CPF
+  EMAIL
+  PHONE
+  EVP
+}
+
+enum DocumentType {
+  RG
+  CPF
+  CNH
+  CERTIFICATE
+  CRIMINAL_RECORD
+  PROOF_OF_ADDRESS
+  REFERENCE_LETTER
+}
+
+enum CertificateType {
+  GRADUATION
+  TECHNICAL
+  SPECIALIZATION
+  FIRST_AID
+  CHILD_CARE
+  OTHER
+}
+
+enum AdminPermission {
+  NANNIES
+  FAMILIES
+  CHILDREN
+  SUBSCRIPTIONS
+  ADMIN_USERS
+  REVIEWS
+  COUPONS
+  JOBS
+  VALIDATIONS
+  CHAT_MODERATION
+  REPORTS
+}
+
+enum ProfileActionType {
+  VIEW
+  HIRE_CLICK
+  CONTACT_CLICK
+  SHARE
+  FAVORITE
+}
+
+enum ProfileViewType {
+  ANONYMOUS
+  LOGGED_IN_FREE
+  LOGGED_IN_PAID
+}
+
+enum ModerationAction {
+  APPROVED
+  HIDDEN
+  DELETED
+  PUBLISHED
+}
+
+enum NotificationType {
+  REVIEW_PUBLISHED
+  REVIEW_REMINDER
+  REVIEW_RESPONSE
+  REVIEW_MODERATED
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  JOB_CLOSED
+}
+
+enum PlanType {
+  FAMILY
+  NANNY
+}
+
+enum BillingCycle {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ONE_TIME
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+  EXPIRED
+}
+
+enum BoostSource {
+  PURCHASED
+  PLAN_INCLUDED
+}
+
+enum BoostType {
+  NANNY_PROFILE
+  JOB
+}
+
+enum MaxTravelDistance {
+  UP_TO_5KM
+  UP_TO_10KM
+  UP_TO_15KM
+  UP_TO_20KM
+  UP_TO_30KM
+  ENTIRE_CITY
+}
+
+enum ComfortWithPets {
+  YES_ANY
+  ONLY_SOME
+  NO
+}
+
+enum ParentPresencePreference {
+  PRESENT
+  ABSENT
+  NO_PREFERENCE
+}
+
+enum SchedulePreference {
+  FIXED
+  FLEXIBLE
+  NO_PREFERENCE
+}
+
+enum AcceptsOvernight {
+  YES
+  OCCASIONALLY
+  NO
+}
+
+enum AcceptsHolidayWork {
+  YES
+  NO
+  SOMETIMES
+}
+
+enum AllowsMultipleJobs {
+  YES
+  NO
+  DEPENDS
+}
+
+enum HousingType {
+  HOUSE
+  APARTMENT_NO_ELEVATOR
+  APARTMENT_WITH_ELEVATOR
+  CONDOMINIUM
+}
+
+enum ParentPresence {
+  ALWAYS
+  SOMETIMES
+  RARELY
+  NEVER
+}
+
+enum GenderPreference {
+  FEMALE
+  MALE
+  NO_PREFERENCE
+}
+
+enum AgePreference {
+  AGE_18_25
+  AGE_26_35
+  AGE_36_50
+  AGE_50_PLUS
+  NO_PREFERENCE
+}
+
+enum JobType {
+  FIXED
+  SUBSTITUTE
+  OCCASIONAL
+}
+
+enum RequiresOvernight {
+  NO
+  SOMETIMES
+  FREQUENTLY
+}
+
+enum ContractType {
+  CLT
+  DAILY_WORKER
+  MEI
+  TO_BE_DISCUSSED
+}
+
+enum JobPaymentType {
+  MONTHLY
+  HOURLY
+  DAILY
+}
+
+enum JobStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+}
+
+enum JobApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum SubscriptionPlan {
+  FAMILY_FREE
+  FAMILY_PLUS
+  NANNY_FREE
+  NANNY_PRO
+}
+
+enum BillingInterval {
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum CancellationReason {
+  FOUND_WHAT_I_NEEDED
+  TOO_EXPENSIVE
+  NOT_USING
+  MISSING_FEATURES
+  TECHNICAL_ISSUES
+  OTHER
+}
+
+enum CancellationEmailType {
+  CONFIRMATION
+  REMINDER_5_DAYS
+  REMINDER_1_DAY
+  CANCELED
+}
+
+enum PixReminderEmailType {
+  REMINDER_1_DAY
+  EXPIRED
+}
+
+enum PaymentGateway {
+  ASAAS
+  STRIPE
+  MERCADO_PAGO
+  PAGSEGURO
+  PAYPAL
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  CONFIRMED
+  PAID
+  FAILED
+  CANCELED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  OVERDUE
+  CHARGEBACK
+  AWAITING_RISK_ANALYSIS
+}
+
+enum PaymentType {
+  SUBSCRIPTION
+  ONE_TIME
+  REFUND
+  ADJUSTMENT
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  BOLETO
+  BANK_TRANSFER
+  PAYPAL
+  WALLET
+  MANUAL
+}
+
+enum PaymentOperationType {
+  CANCEL_SUBSCRIPTION
+  CANCEL_INVOICE
+  RECREATE_SUBSCRIPTION
+  UPDATE_SUBSCRIPTION
+}
+
+enum PendingOperationStatus {
+  PENDING
+  RETRYING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+enum ValidationLevel {
+  BASIC
+  PREMIUM
+}
+
+enum ValidationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum DocumentUploadType {
+  DOCUMENT_FRONT
+  DOCUMENT_BACK
+  SELFIE
+}
+
+enum ReviewType {
+  NANNY_TO_FAMILY
+  FAMILY_TO_NANNY
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+  FREE_TRIAL_DAYS
+}
+
+enum CouponApplicableTo {
+  ALL
+  FAMILIES
+  NANNIES
+  SPECIFIC_PLAN
+}
+
+enum FamilyNannyType {
+  FOLGUISTA
+  DIARISTA
+  MENSALISTA
+}
+
+enum FamilyContractRegime {
+  AUTONOMA
+  PJ
+  CLT
+}
+
+// ============================================
+// REPORT SYSTEM - Denúncias de perfis e vagas
+// ============================================
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum ReportTargetType {
+  NANNY
+  JOB
+}
+
+enum ReportAction {
+  DISMISSED
+  SUSPENDED
+  DELETED
+}

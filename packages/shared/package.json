@@ -1,0 +1,49 @@
+{
+  "name": "@cuidly/shared",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./utils/slug": {
+      "types": "./src/utils/slug.ts",
+      "default": "./src/utils/slug.ts"
+    },
+    "./utils/cn": {
+      "types": "./src/utils/cn.ts",
+      "default": "./src/utils/cn.ts"
+    },
+    "./utils/string": {
+      "types": "./src/utils/string/index.ts",
+      "default": "./src/utils/string/index.ts"
+    },
+    "./utils/number": {
+      "types": "./src/utils/number/index.ts",
+      "default": "./src/utils/number/index.ts"
+    },
+    "./utils/date": {
+      "types": "./src/utils/date/index.ts",
+      "default": "./src/utils/date/index.ts"
+    },
+    "./utils/document": {
+      "types": "./src/utils/document/index.ts",
+      "default": "./src/utils/document/index.ts"
+    },
+    "./utils/geo": {
+      "types": "./src/utils/geo/index.ts",
+      "default": "./src/utils/geo/index.ts"
+    },
+    "./utils/label-mappers": {
+      "types": "./src/utils/label-mappers/index.ts",
+      "default": "./src/utils/label-mappers/index.ts"
+    }
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.0.0",
+    "date-fns": "^4.1.0"
+  }
+}

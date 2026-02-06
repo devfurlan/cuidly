@@ -1,0 +1,74 @@
+{
+  "name": "@cuidly/core",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./subscriptions": {
+      "types": "./src/subscriptions/index.ts",
+      "default": "./src/subscriptions/index.ts"
+    },
+    "./schemas": {
+      "types": "./src/schemas/index.ts",
+      "default": "./src/schemas/index.ts"
+    },
+    "./schemas/nanny": {
+      "types": "./src/schemas/nanny.ts",
+      "default": "./src/schemas/nanny.ts"
+    },
+    "./schemas/family": {
+      "types": "./src/schemas/family.ts",
+      "default": "./src/schemas/family.ts"
+    },
+    "./schemas/job": {
+      "types": "./src/schemas/job.ts",
+      "default": "./src/schemas/job.ts"
+    },
+    "./schemas/child": {
+      "types": "./src/schemas/child.ts",
+      "default": "./src/schemas/child.ts"
+    },
+    "./schemas/common": {
+      "types": "./src/schemas/common.ts",
+      "default": "./src/schemas/common.ts"
+    },
+    "./validators": {
+      "types": "./src/validators/index.ts",
+      "default": "./src/validators/index.ts"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./constants": {
+      "types": "./src/constants/index.ts",
+      "default": "./src/constants/index.ts"
+    },
+    "./matching": {
+      "types": "./src/matching/index.ts",
+      "default": "./src/matching/index.ts"
+    },
+    "./content-moderation": {
+      "types": "./src/content-moderation/index.ts",
+      "default": "./src/content-moderation/index.ts"
+    },
+    "./payment": {
+      "types": "./src/payment/index.ts",
+      "default": "./src/payment/index.ts"
+    },
+    "./validation": {
+      "types": "./src/validation/index.ts",
+      "default": "./src/validation/index.ts"
+    }
+  },
+  "dependencies": {
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

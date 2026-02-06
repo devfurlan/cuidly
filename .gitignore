@@ -1,0 +1,17 @@
+.history
+node_modules
+**/.env*
+**/node_modules*
+**/*.backup*
+.turbo
+.claude
+**/scripts*
+**/docs*
+
+# Security - never commit these
+*.pem
+*.key
+*.cert
+**/secrets*
+**/*.secret*
+**/credentials*
