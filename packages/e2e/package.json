@@ -1,0 +1,26 @@
+{
+  "name": "@cuidly/e2e",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "pw:run": "playwright test",
+    "pw:ui": "playwright test --ui",
+    "pw:headed": "playwright test --headed",
+    "reset-db": "dotenv -e .env.test -- tsx scripts/reset-test-db.ts",
+    "create-users": "dotenv -e .env.test -- tsx scripts/create-test-users.ts",
+    "test": "pnpm reset-db && pnpm create-users && pnpm pw:run"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "dotenv-cli": "^8.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
+    "@supabase/supabase-js": "^2.49.8",
+    "dotenv": "^16.6.1",
+    "pg": "^8.16.3"
+  }
+}

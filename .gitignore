@@ -6,7 +6,13 @@ node_modules
 .turbo
 .claude
 **/scripts*
+!packages/e2e/scripts/
 **/docs*
+
+# Cypress artifacts
+packages/e2e/cypress/screenshots/
+packages/e2e/cypress/videos/
+packages/e2e/cypress/downloads/
 
 # Security - never commit these
 *.pem

@@ -15,7 +15,13 @@
     "db:migrate": "pnpm --filter @cuidly/database migrate:dev",
     "db:migrate:deploy": "pnpm --filter @cuidly/database migrate",
     "db:generate": "pnpm --filter @cuidly/database generate",
-    "db:seed": "pnpm --filter @cuidly/database seed"
+    "db:seed": "pnpm --filter @cuidly/database seed",
+    "e2e": "pnpm --filter @cuidly/e2e pw:run",
+    "e2e:headed": "pnpm --filter @cuidly/e2e pw:headed",
+    "e2e:ui": "pnpm --filter @cuidly/e2e pw:ui",
+    "e2e:reset-db": "pnpm --filter @cuidly/e2e reset-db",
+    "e2e:create-users": "pnpm --filter @cuidly/e2e create-users",
+    "e2e:test": "pnpm --filter @cuidly/e2e test"
   },
   "private": true,
   "devDependencies": {

@@ -1,0 +1,129 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Map GitHub Secrets (TEST_* prefix) to the env var names the app/scripts expect
+env:
+  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.TEST_NEXT_PUBLIC_SUPABASE_URL }}
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.TEST_NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  SUPABASE_PROJECT_REF: ${{ secrets.TEST_SUPABASE_PROJECT_REF }}
+  DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.TEST_DIRECT_URL }}
+  ASAAS_API_KEY: ${{ secrets.TEST_ASAAS_API_KEY }}
+  ASAAS_ENVIRONMENT: ${{ secrets.TEST_ASAAS_ENVIRONMENT }}
+  ASAAS_ACCESS_TOKEN: ${{ secrets.TEST_ASAAS_ACCESS_TOKEN }}
+  ASAAS_WALLET_ID: ${{ secrets.TEST_ASAAS_WALLET_ID }}
+  NEXT_PUBLIC_APP_URL: ${{ secrets.TEST_NEXT_PUBLIC_APP_URL }}
+
+jobs:
+  e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @cuidly/e2e exec playwright install --with-deps chromium
+
+      - name: Write .env.test for E2E scripts
+        working-directory: packages/e2e
+        run: |
+          cat > .env.test <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+          SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+          SUPABASE_PROJECT_REF=${SUPABASE_PROJECT_REF}
+          DATABASE_URL=${DATABASE_URL}
+          DIRECT_URL=${DIRECT_URL}
+          ASAAS_API_KEY=${ASAAS_API_KEY}
+          ASAAS_ENVIRONMENT=${ASAAS_ENVIRONMENT}
+          ASAAS_ACCESS_TOKEN=${ASAAS_ACCESS_TOKEN}
+          ASAAS_WALLET_ID=${ASAAS_WALLET_ID}
+          NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+          EOF
+
+      - name: Write .env.local for app build
+        working-directory: apps/app
+        run: |
+          cat > .env.local <<EOF
+          NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+          SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+          DATABASE_URL=${DATABASE_URL}
+          DIRECT_URL=${DIRECT_URL}
+          ASAAS_API_KEY=${ASAAS_API_KEY}
+          ASAAS_ENVIRONMENT=${ASAAS_ENVIRONMENT}
+          ASAAS_ACCESS_TOKEN=${ASAAS_ACCESS_TOKEN}
+          ASAAS_WALLET_ID=${ASAAS_WALLET_ID}
+          NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+          EOF
+
+      - name: Reset test database
+        run: pnpm e2e:reset-db
+
+      - name: Create test users and seed data
+        run: pnpm e2e:create-users
+
+      - name: Build app
+        run: pnpm build:app
+
+      - name: Run E2E tests
+        run: |
+          # Start the app in production mode
+          pnpm --filter @cuidly/app start -- -p 3300 &
+          APP_PID=$!
+
+          # Wait for the app to be ready
+          npx wait-on http://localhost:3300 --timeout 120000
+
+          # Run Playwright tests
+          pnpm e2e
+
+          # Store exit code
+          EXIT_CODE=$?
+
+          # Cleanup
+          kill $APP_PID 2>/dev/null || true
+
+          exit $EXIT_CODE
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: packages/e2e/playwright-report/
+          retention-days: 14
+
+      - name: Upload test traces
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: packages/e2e/test-results/
+          retention-days: 7
