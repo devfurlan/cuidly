@@ -6,6 +6,13 @@ import { PiChartBar, PiCrown } from 'react-icons/pi';
 import { Badge } from '@/components/ui/shadcn/badge';
 import { Button } from '@/components/ui/shadcn/button';
 import { Card } from '@/components/ui/shadcn/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/shadcn/select';
 import { PremiumLockedSection } from '@/components/PremiumLockedSection';
 import { PremiumUpsellModal } from '@/components/PremiumUpsellModal';
 import { createClient } from '@/utils/supabase/client';
@@ -78,6 +85,8 @@ export function MatchScoreSection({
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [isLoadingMatch, setIsLoadingMatch] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [activeJobs, setActiveJobs] = useState<{ id: number; title: string }[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
 
   // Check authentication and role
   useEffect(() => {
@@ -102,6 +111,27 @@ export function MatchScoreSection({
     checkAuth();
   }, [supabase]);
 
+  // Fetch active jobs for the job selector
+  useEffect(() => {
+    if (!isAuthenticated || userRole !== 'FAMILY') return;
+
+    async function loadActiveJobs() {
+      try {
+        const response = await fetch('/api/families/me/jobs');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.jobs?.length > 0) {
+            setActiveJobs(data.jobs);
+            setSelectedJobId(data.jobs[0].id);
+          }
+        }
+      } catch {
+        // Ignore
+      }
+    }
+    loadActiveJobs();
+  }, [isAuthenticated, userRole]);
+
   // Load match score for families
   useEffect(() => {
     const loadMatchScore = async () => {
@@ -111,7 +141,10 @@ export function MatchScoreSection({
 
       setIsLoadingMatch(true);
       try {
-        const response = await fetch(`/api/nannies/slug/${nannySlug}/match`);
+        const params = new URLSearchParams();
+        if (selectedJobId) params.set('jobId', selectedJobId.toString());
+        const url = `/api/nannies/slug/${nannySlug}/match${params.toString() ? `?${params.toString()}` : ''}`;
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -129,7 +162,7 @@ export function MatchScoreSection({
     };
 
     loadMatchScore();
-  }, [isAuthenticated, userRole, nannySlug]);
+  }, [isAuthenticated, userRole, nannySlug, selectedJobId]);
 
   const isOwnProfile = currentUserId && nannyUserId && currentUserId === nannyUserId;
 
@@ -137,6 +170,27 @@ export function MatchScoreSection({
   if (!isAuthenticated || userRole !== 'FAMILY' || isOwnProfile) {
     return null;
   }
+
+  const jobSelector = activeJobs.length > 1 ? (
+    <div className="mb-3">
+      <label className="mb-1 block text-xs text-gray-500">Compatibilidade com:</label>
+      <Select
+        value={selectedJobId?.toString() ?? ''}
+        onValueChange={(value) => setSelectedJobId(Number(value))}
+      >
+        <SelectTrigger className="h-8 text-sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {activeJobs.map((job) => (
+            <SelectItem key={job.id} value={job.id.toString()}>
+              {job.title}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  ) : null;
 
   if (variant === 'mobile') {
     return (
@@ -154,6 +208,8 @@ export function MatchScoreSection({
                   </Badge>
                 )}
               </div>
+
+              {hasActiveSubscription && jobSelector}
 
               {isLoadingMatch ? (
                 <div className="flex items-center justify-center py-4">
@@ -224,7 +280,7 @@ export function MatchScoreSection({
                 ) : (
                   <PremiumLockedSection
                     onUnlock={() => setShowPremiumModal(true)}
-                    title="Match Score"
+                    title="Pontuação de Match"
                     description="Veja o quanto esta babá combina com sua família"
                     blurIntensity="medium"
                   >
@@ -279,6 +335,8 @@ export function MatchScoreSection({
             )}
           </div>
 
+          {hasActiveSubscription && jobSelector}
+
           {isLoadingMatch ? (
             <div className="flex items-center justify-center py-8">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-fuchsia-500 border-t-transparent"></div>
@@ -310,7 +368,7 @@ export function MatchScoreSection({
                   >
                     {matchResult.score}%
                   </p>
-                  <p className="text-sm text-gray-600">Match score</p>
+                  <p className="text-sm text-gray-600">Pontuação de match</p>
                 </div>
 
                 {!matchResult.isEligible && matchResult.eliminationReasons.length > 0 && (
@@ -364,13 +422,13 @@ export function MatchScoreSection({
             ) : (
               <PremiumLockedSection
                 onUnlock={() => setShowPremiumModal(true)}
-                title="Match Score"
+                title="Pontuação de Match"
                 description="Veja o quanto esta babá combina com sua família"
                 blurIntensity="medium"
               >
                 <div className="mb-4 rounded-lg bg-green-100 p-4 text-center">
                   <p className="text-4xl font-bold text-green-600">85%</p>
-                  <p className="text-sm text-gray-600">Match score</p>
+                  <p className="text-sm text-gray-600">Pontuação de match</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">

@@ -13,8 +13,9 @@ import {
 /**
  * Match Score API for Family viewing a Nanny profile
  *
- * GET /api/nannies/slug/[slug]/match
+ * GET /api/nannies/slug/[slug]/match?jobId=123
  * Returns the match score between the logged-in family and the nanny
+ * If jobId is provided, matches against that specific job's requirements
  */
 
 export async function GET(
@@ -23,6 +24,8 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const { searchParams } = new URL(request.url);
+    const jobIdParam = searchParams.get('jobId');
 
     if (!slug) {
       return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 });
@@ -38,7 +41,7 @@ export async function GET(
     // Only families can see match scores
     if (currentUser.type !== 'family') {
       return NextResponse.json(
-        { error: 'Apenas famílias podem ver o match score' },
+        { error: 'Apenas famílias podem ver a pontuação de match' },
         { status: 403 }
       );
     }
@@ -177,7 +180,7 @@ export async function GET(
     };
 
     // Prepare children data for matching
-    const childrenData: ChildData[] = family.children.map(cf => ({
+    const allChildrenData: ChildData[] = family.children.map(cf => ({
       id: cf.child.id,
       birthDate: cf.child.birthDate,
       expectedBirthDate: cf.child.expectedBirthDate,
@@ -186,12 +189,39 @@ export async function GET(
       specialNeedsDescription: cf.child.specialNeedsDescription,
     }));
 
-    // Create a minimal job data (family profile-based, not job-based)
-    const jobData: JobData = {
-      id: 0, // No actual job
-      mandatoryRequirements: [], // Use family preferences
-      childrenIds: childrenData.map(c => c.id), // All children
-    };
+    // If jobId provided, use that job's data; otherwise use family profile
+    let jobData: JobData;
+    let childrenData: ChildData[];
+
+    if (jobIdParam) {
+      const job = await prisma.job.findUnique({
+        where: { id: parseInt(jobIdParam, 10) },
+      });
+
+      if (job && job.familyId === family.id) {
+        jobData = {
+          id: job.id,
+          mandatoryRequirements: job.mandatoryRequirements,
+          childrenIds: job.childrenIds,
+        };
+        childrenData = allChildrenData.filter(c => job.childrenIds.includes(c.id));
+      } else {
+        // Job not found or doesn't belong to family — fall back to profile
+        jobData = {
+          id: 0,
+          mandatoryRequirements: [],
+          childrenIds: allChildrenData.map(c => c.id),
+        };
+        childrenData = allChildrenData;
+      }
+    } else {
+      jobData = {
+        id: 0,
+        mandatoryRequirements: [],
+        childrenIds: allChildrenData.map(c => c.id),
+      };
+      childrenData = allChildrenData;
+    }
 
     // Calculate match score
     const result: MatchResult = calculateMatchScore(

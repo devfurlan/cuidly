@@ -44,7 +44,7 @@ model Nanny {
   slug                                String?                   @unique
   birthDate                           DateTime?                 @map("birth_date") @db.Date
   cpf                                 String?
-  cpfHash                             String?                   @map("cpf_hash")
+  cpfHash                             String?                   @unique @map("cpf_hash")
   phoneNumber                         String?                   @map("phone_number")
   emailAddress                        String?                   @map("email_address")
   addressId                           Int?                      @map("address_id")
@@ -235,7 +235,7 @@ model Family {
   addressId             Int?                  @map("address_id")
   name                  String
   cpf                   String?
-  cpfHash               String?               @map("cpf_hash")
+  cpfHash               String?               @unique @map("cpf_hash")
   birthDate             DateTime?             @map("birth_date") @db.Date
   gender                Gender?
   phoneNumber           String?               @map("phone_number")

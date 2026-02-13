@@ -5,14 +5,17 @@
  * Gerenciamento de crianças para famílias
  */
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PiBaby, PiPencilSimple, PiPlus, PiTrash, PiWarningCircle } from 'react-icons/pi';
-
+import { useState } from 'react';
 import {
-  Avatar,
-  AvatarFallback,
-} from '@/components/ui/shadcn/avatar';
+  PiBaby,
+  PiPencilSimple,
+  PiPlus,
+  PiTrash,
+  PiWarningCircle,
+} from 'react-icons/pi';
+
+import { Avatar, AvatarFallback } from '@/components/ui/shadcn/avatar';
 import { Badge } from '@/components/ui/shadcn/badge';
 import { Button } from '@/components/ui/shadcn/button';
 import {
@@ -109,7 +112,9 @@ function getUserInitials(name: string | null): string {
     .toUpperCase();
 }
 
-export function ChildrenManagement({ initialChildren }: ChildrenManagementProps) {
+export function ChildrenManagement({
+  initialChildren,
+}: ChildrenManagementProps) {
   const router = useRouter();
   const { showError, showSuccess } = useApiError();
 
@@ -213,7 +218,7 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
 
       if (response.ok) {
         showSuccess(
-          editingChild ? 'Criança atualizada!' : 'Criança adicionada!'
+          editingChild ? 'Criança atualizada!' : 'Criança adicionada!',
         );
         handleCloseDialog();
         loadChildren();
@@ -244,7 +249,7 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
         `/api/families/children/${childToDelete.id}`,
         {
           method: 'DELETE',
-        }
+        },
       );
 
       if (response.ok) {
@@ -269,7 +274,10 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
     setFormData((prev) => {
       const currentArray = prev.carePriorities;
       if (currentArray.includes(value)) {
-        return { ...prev, carePriorities: currentArray.filter((i) => i !== value) };
+        return {
+          ...prev,
+          carePriorities: currentArray.filter((i) => i !== value),
+        };
       } else if (currentArray.length < 3) {
         return { ...prev, carePriorities: [...currentArray, value] };
       }
@@ -281,15 +289,13 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
     <>
       {/* Subtitle + Actions */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-gray-600">
-          Gerencie as informações das suas crianças
-        </p>
+        <p className="text-gray-600"></p>
         <Button
           className="bg-blue-600 hover:bg-blue-700"
           onClick={() => handleOpenDialog()}
         >
-          <PiPlus className="mr-2 size-4" />
-          Adicionar Filho
+          <PiPlus />
+          Adicionar Criança
         </Button>
       </div>
 
@@ -307,8 +313,8 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
             className="mt-6 bg-blue-600 hover:bg-blue-700"
             onClick={() => handleOpenDialog()}
           >
-            <PiPlus className="mr-2 size-4" />
-            Adicionar Primeiro Filho
+            <PiPlus />
+            Adicionar Criança
           </Button>
         </Card>
       ) : (
@@ -354,9 +360,7 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
               <CardContent className="space-y-4">
                 {/* Badges */}
                 <div className="flex flex-wrap gap-2">
-                  {child.isMain && (
-                    <Badge variant="info">Principal</Badge>
-                  )}
+                  {child.isMain && <Badge variant="info">Principal</Badge>}
                   {child.hasSpecialNeeds && (
                     <Badge variant="purple-outline">
                       Necessidades especiais
@@ -450,14 +454,19 @@ export function ChildrenManagement({ initialChildren }: ChildrenManagementProps)
               </p>
               <div className="flex flex-wrap gap-2">
                 {carePriorityOptions.map((option) => {
-                  const isSelected = formData.carePriorities.includes(option.value);
-                  const isDisabled = !isSelected && formData.carePriorities.length >= 3;
+                  const isSelected = formData.carePriorities.includes(
+                    option.value,
+                  );
+                  const isDisabled =
+                    !isSelected && formData.carePriorities.length >= 3;
                   return (
                     <Badge
                       key={option.value}
                       variant={isSelected ? 'default' : 'outline'}
-                      className={`cursor-pointer ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={() => !isDisabled && toggleCarePriority(option.value)}
+                      className={`cursor-pointer ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                      onClick={() =>
+                        !isDisabled && toggleCarePriority(option.value)
+                      }
                     >
                       {option.label}
                     </Badge>

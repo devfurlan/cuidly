@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     // Rate limiting por IP para prevenir brute force
     const clientIP = getClientIP(request.headers);
-    const rateLimitResult = passwordResetLimiter.check(`reset:${clientIP}`);
+    const rateLimitResult = await passwordResetLimiter.check(`reset:${clientIP}`);
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(

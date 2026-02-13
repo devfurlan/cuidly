@@ -26,6 +26,7 @@ import {
   NANNY_TYPE_OPTIONS,
   CONTRACT_REGIME_OPTIONS,
   HOURLY_RATE_OPTIONS,
+  LEGACY_HOURLY_RATE_LABELS,
   ACTIVITIES_NOT_ACCEPTED_OPTIONS,
   MAX_CHILDREN_CARE_OPTIONS,
   MARITAL_STATUS_OPTIONS_FEMALE,
@@ -237,7 +238,13 @@ export function getContractRegimeLabels(values: string[] | null | undefined): st
 }
 
 export function getHourlyRateRangeLabel(value: string | null | undefined): string {
-  return getLabel(HOURLY_RATE_OPTIONS, value);
+  // First try current options
+  const label = getLabel(HOURLY_RATE_OPTIONS, value);
+  // If not found (returns the value itself), check legacy labels
+  if (value && label === String(value) && LEGACY_HOURLY_RATE_LABELS[value]) {
+    return LEGACY_HOURLY_RATE_LABELS[value];
+  }
+  return label;
 }
 
 export function getActivityNotAcceptedLabel(value: string): string {
@@ -357,7 +364,10 @@ export function getMandatoryRequirementLabels(values: string[] | null | undefine
 export function getFamilyHourlyRateLabel(value: string | null | undefined): string {
   if (!value) return '';
   const option = FAMILY_HOURLY_RATE_OPTIONS.find((opt) => opt.value === value);
-  return option?.label || value;
+  if (option) return option.label;
+  // Check legacy labels for old database values
+  if (LEGACY_HOURLY_RATE_LABELS[value]) return LEGACY_HOURLY_RATE_LABELS[value];
+  return value;
 }
 
 export function getDomesticHelpLabel(value: string): string {

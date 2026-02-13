@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 import { phoneToE164 } from '@/helpers/validators';
@@ -382,6 +383,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, nannyId: nanny.id });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002' &&
+      (error.meta?.target as string[])?.includes('cpf_hash')
+    ) {
+      return NextResponse.json(
+        { error: 'Este CPF já está cadastrado em outra conta' },
+        { status: 400 }
+      );
+    }
     console.error('Error saving nanny partial data:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

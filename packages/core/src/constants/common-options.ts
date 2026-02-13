@@ -23,6 +23,23 @@ export const HOURLY_RATE_LABELS: Record<string, string> = {
   OVER_80: 'Acima de R$ 80/h',
 };
 
+// Legacy hourly rate labels (backwards compatibility with old database values)
+export const LEGACY_HOURLY_RATE_LABELS: Record<string, string> = {
+  // Legacy nanny values
+  UP_TO_20: 'Até R$ 20/h',
+  FROM_21_TO_30: 'R$ 21–30/h',
+  FROM_31_TO_40: 'R$ 31–40/h',
+  FROM_41_TO_50: 'R$ 41–50/h',
+  FROM_51_TO_70: 'R$ 51–70/h',
+  FROM_71_TO_100: 'R$ 71–100/h',
+  OVER_100: 'Acima de R$ 100/h',
+  // Legacy family values
+  '20_TO_30': 'R$ 20–30/h',
+  '30_TO_40': 'R$ 30–40/h',
+  '40_TO_50': 'R$ 40–50/h',
+  ABOVE_50: 'Acima de R$ 50/h',
+};
+
 // Special needs options - shared between nannies (experience) and children (needs)
 export const SPECIAL_NEEDS_OPTIONS = [
   { value: 'AUTISM', label: 'Autismo (TEA)' },

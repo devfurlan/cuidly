@@ -124,7 +124,7 @@ export function PaywallModal({
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <PiMagnifyingGlass className="size-4 text-blue-600" />
-                  Match score personalizado
+                  Pontuação de match personalizada
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <PiStar className="size-4 text-yellow-500" />

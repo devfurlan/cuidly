@@ -146,6 +146,8 @@ function NanniesListContent() {
   const [hasActiveJob, setHasActiveJob] = useState(false);
   const [hasMatchingFeature, setHasMatchingFeature] = useState(false);
   const [showUpsellModal, setShowUpsellModal] = useState(false);
+  const [activeJobs, setActiveJobs] = useState<{ id: number; title: string }[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     locations: [],
     certifications: [],
@@ -170,6 +172,26 @@ function NanniesListContent() {
     jobType: searchParams.get('jobType') || '',
   });
 
+  // Fetch active jobs for the job selector
+  useEffect(() => {
+    async function loadActiveJobs() {
+      try {
+        const response = await fetch('/api/families/me/jobs');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.jobs?.length > 0) {
+            setActiveJobs(data.jobs);
+            // Default to most recent job (first in list, already sorted by createdAt desc)
+            setSelectedJobId(data.jobs[0].id);
+          }
+        }
+      } catch {
+        // Not a family or not authenticated — ignore
+      }
+    }
+    loadActiveJobs();
+  }, []);
+
   const loadNannies = useCallback(async () => {
     setIsLoading(true);
 
@@ -185,6 +207,7 @@ function NanniesListContent() {
       if (filters.hasSpecialNeedsExperience)
         params.set('hasSpecialNeedsExperience', 'true');
       if (filters.jobType) params.set('jobType', filters.jobType);
+      if (selectedJobId) params.set('jobId', selectedJobId.toString());
       params.set('page', pagination.page.toString());
       params.set('limit', pagination.limit.toString());
 
@@ -205,7 +228,7 @@ function NanniesListContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, pagination.page, pagination.limit]);
+  }, [filters, selectedJobId, pagination.page, pagination.limit]);
 
   useEffect(() => {
     loadNannies();
@@ -273,11 +296,35 @@ function NanniesListContent() {
         <div
           className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${hasActiveJob ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}
         >
-          <PiStarFill className="size-5" />
+          <PiStarFill className="size-5 shrink-0" />
           {hasActiveJob ? (
-            <p className="text-sm">
-              As babás estão ordenadas por compatibilidade com sua vaga ativa.
-            </p>
+            activeJobs.length > 1 ? (
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span>Ordenado por compatibilidade com:</span>
+                <Select
+                  value={selectedJobId?.toString() ?? ''}
+                  onValueChange={(value) => {
+                    setSelectedJobId(Number(value));
+                    setPagination((prev) => ({ ...prev, page: 1 }));
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-auto min-w-40 border-green-300 bg-white text-green-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeJobs.map((job) => (
+                      <SelectItem key={job.id} value={job.id.toString()}>
+                        {job.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <p className="text-sm">
+                As babás estão ordenadas por compatibilidade com sua vaga ativa.
+              </p>
+            )
           ) : (
             <p className="text-sm">
               Crie uma vaga para ver o score de compatibilidade com cada babá.

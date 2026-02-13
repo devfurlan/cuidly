@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { phoneToE164 } from '@/helpers/validators';
 import { slotsToArrays } from '@/schemas/family-onboarding';
@@ -576,6 +577,16 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, familyId: family.id });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002' &&
+      (error.meta?.target as string[])?.includes('cpf_hash')
+    ) {
+      return NextResponse.json(
+        { error: 'Este CPF já está cadastrado em outra conta' },
+        { status: 400 }
+      );
+    }
     console.error('Error saving family partial data:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(

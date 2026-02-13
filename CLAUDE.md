@@ -75,6 +75,31 @@ const emailTemplate = getWelcomeSubscriptionEmailTemplate({
 - ❌ "Seu email foi verificado"
 - ❌ "Acesso a plataforma" (falta crase)
 
+#### Valores de Enum — NUNCA Exibir Crus
+
+**NUNCA** renderizar valores de enum diretamente na UI. **SEMPRE** usar as funções de label getter de `@/helpers/label-getters.ts`.
+
+- O banco de dados pode conter valores legados de versões anteriores das opções
+- A função `getLabel()` faz fallback para `String(value)` se não encontrar match — isso causa exibição de enums crus como `FROM_21_TO_30`
+- Ao adicionar novas opções, **SEMPRE** manter labels para valores antigos via `LEGACY_*_LABELS`
+
+```tsx
+// ✅ CORRETO - usa label getter
+import { getHourlyRateRangeLabel } from '@/helpers/label-getters';
+<p>{getHourlyRateRangeLabel(nanny.hourlyRateRange)}</p>
+
+// ❌ ERRADO - enum cru exibido ao usuário
+<p>{nanny.hourlyRateRange}</p>
+
+// ❌ ERRADO - formatação manual de enum
+<p>{nanny.hourlyRateRange?.replace(/_/g, ' ')}</p>
+```
+
+**Arquivos de referência:**
+- Labels legados: `apps/app/src/constants/options/common-options.ts` → `LEGACY_HOURLY_RATE_LABELS`
+- Label getters: `apps/app/src/helpers/label-getters.ts`
+- Padrão existente: `LEGACY_ACTIVITY_LABELS` em `nanny-options.ts`
+
 ### Linguagem Neutra
 
 **SEMPRE** usar linguagem neutra de gênero em todos os textos voltados ao usuário.

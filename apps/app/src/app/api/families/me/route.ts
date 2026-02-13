@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { getCurrentUser, getSubscriptionParams } from '@/lib/auth/getCurrentUser';
 import { phoneToE164 } from '@/helpers/validators';
@@ -221,6 +222,16 @@ export async function PUT(request: NextRequest) {
       family: updatedFamily,
     });
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002' &&
+      (error.meta?.target as string[])?.includes('cpf_hash')
+    ) {
+      return NextResponse.json(
+        { error: 'Este CPF já está cadastrado em outra conta' },
+        { status: 400 }
+      );
+    }
     console.error('Error updating family data:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },

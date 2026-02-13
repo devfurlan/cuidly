@@ -27,7 +27,7 @@ export function MatchScoreCard({ matchResult }: MatchScoreCardProps) {
         <p className={`text-4xl font-bold ${getScoreColor(matchResult.score)}`}>
           {matchResult.score}%
         </p>
-        <p className="text-sm text-gray-600">Score de compatibilidade</p>
+        <p className="text-sm text-gray-600">Pontuação de match</p>
       </div>
 
       {!matchResult.isEligible && matchResult.eliminationReasons.length > 0 && (

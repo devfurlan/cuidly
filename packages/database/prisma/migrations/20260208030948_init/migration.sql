@@ -32,7 +32,7 @@ CREATE TYPE "ProfileViewType" AS ENUM ('ANONYMOUS', 'LOGGED_IN_FREE', 'LOGGED_IN
 CREATE TYPE "ModerationAction" AS ENUM ('APPROVED', 'HIDDEN', 'DELETED', 'PUBLISHED');
 
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('REVIEW_PUBLISHED', 'REVIEW_REMINDER', 'REVIEW_RESPONSE', 'REVIEW_MODERATED');
+CREATE TYPE "NotificationType" AS ENUM ('REVIEW_PUBLISHED', 'REVIEW_REMINDER', 'REVIEW_RESPONSE', 'REVIEW_MODERATED', 'APPLICATION_ACCEPTED', 'APPLICATION_REJECTED', 'JOB_CLOSED');
 
 -- CreateEnum
 CREATE TYPE "PlanType" AS ENUM ('FAMILY', 'NANNY');
@@ -107,6 +107,15 @@ CREATE TYPE "SubscriptionPlan" AS ENUM ('FAMILY_FREE', 'FAMILY_PLUS', 'NANNY_FRE
 CREATE TYPE "BillingInterval" AS ENUM ('MONTH', 'QUARTER', 'YEAR');
 
 -- CreateEnum
+CREATE TYPE "CancellationReason" AS ENUM ('FOUND_WHAT_I_NEEDED', 'TOO_EXPENSIVE', 'NOT_USING', 'MISSING_FEATURES', 'TECHNICAL_ISSUES', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "CancellationEmailType" AS ENUM ('CONFIRMATION', 'REMINDER_5_DAYS', 'REMINDER_1_DAY', 'CANCELED');
+
+-- CreateEnum
+CREATE TYPE "PixReminderEmailType" AS ENUM ('REMINDER_1_DAY', 'EXPIRED');
+
+-- CreateEnum
 CREATE TYPE "PaymentGateway" AS ENUM ('ASAAS', 'STRIPE', 'MERCADO_PAGO', 'PAGSEGURO', 'PAYPAL', 'MANUAL');
 
 -- CreateEnum
@@ -117,6 +126,12 @@ CREATE TYPE "PaymentType" AS ENUM ('SUBSCRIPTION', 'ONE_TIME', 'REFUND', 'ADJUST
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('CREDIT_CARD', 'DEBIT_CARD', 'PIX', 'BOLETO', 'BANK_TRANSFER', 'PAYPAL', 'WALLET', 'MANUAL');
+
+-- CreateEnum
+CREATE TYPE "PaymentOperationType" AS ENUM ('CANCEL_SUBSCRIPTION', 'CANCEL_INVOICE', 'RECREATE_SUBSCRIPTION', 'UPDATE_SUBSCRIPTION');
+
+-- CreateEnum
+CREATE TYPE "PendingOperationStatus" AS ENUM ('PENDING', 'RETRYING', 'COMPLETED', 'FAILED', 'SKIPPED');
 
 -- CreateEnum
 CREATE TYPE "ValidationLevel" AS ENUM ('BASIC', 'PREMIUM');
@@ -131,7 +146,7 @@ CREATE TYPE "DocumentUploadType" AS ENUM ('DOCUMENT_FRONT', 'DOCUMENT_BACK', 'SE
 CREATE TYPE "ReviewType" AS ENUM ('NANNY_TO_FAMILY', 'FAMILY_TO_NANNY');
 
 -- CreateEnum
-CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED');
+CREATE TYPE "DiscountType" AS ENUM ('PERCENTAGE', 'FIXED', 'FREE_TRIAL_DAYS');
 
 -- CreateEnum
 CREATE TYPE "CouponApplicableTo" AS ENUM ('ALL', 'FAMILIES', 'NANNIES', 'SPECIFIC_PLAN');
@@ -195,7 +210,6 @@ CREATE TABLE "nannies" (
     "hourly_rate" DECIMAL(10,2),
     "daily_rate" DECIMAL(10,2),
     "monthly_rate" DECIMAL(10,2),
-    "mini_bio" TEXT,
     "about_me" TEXT,
     "availability_json" JSONB,
     "specialties_json" JSONB,
@@ -230,9 +244,11 @@ CREATE TABLE "nannies" (
     "birth_city" TEXT,
     "birth_state" CHAR(2),
     "mother_name" TEXT,
-    "cpf_validated" BOOLEAN NOT NULL DEFAULT false,
-    "cpf_validation_date" TIMESTAMP(3),
-    "cpf_validation_message" TEXT,
+    "document_validated" BOOLEAN NOT NULL DEFAULT false,
+    "document_validation_date" TIMESTAMP(3),
+    "document_validation_message" TEXT,
+    "document_type" TEXT,
+    "document_expiration_date" DATE,
     "criminal_background_validated" BOOLEAN NOT NULL DEFAULT false,
     "criminal_background_validation_date" TIMESTAMP(3),
     "criminal_background_validation_message" TEXT,
@@ -254,6 +270,7 @@ CREATE TABLE "nannies" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
     "deleted_at" TIMESTAMP(3),
+    "last_activity_at" TIMESTAMP(3),
     "is_profile_public" BOOLEAN NOT NULL DEFAULT true,
 
     CONSTRAINT "nannies_pkey" PRIMARY KEY ("id")
@@ -285,7 +302,6 @@ CREATE TABLE "nanny_availabilities" (
     "monthly_rate" DECIMAL(10,2),
     "hourly_rate" DECIMAL(10,2),
     "daily_rate" DECIMAL(10,2),
-    "open_to_negotiation" BOOLEAN NOT NULL DEFAULT false,
     "preferred_contract_types" "ContractType"[] DEFAULT ARRAY[]::"ContractType"[],
     "allows_multiple_jobs" "AllowsMultipleJobs",
     "last_updated" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -371,6 +387,7 @@ CREATE TABLE "families" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
     "deleted_at" TIMESTAMP(3),
+    "last_activity_at" TIMESTAMP(3),
 
     CONSTRAINT "families_pkey" PRIMARY KEY ("id")
 );
@@ -424,6 +441,16 @@ CREATE TABLE "job_applications" (
     "updated_at" TIMESTAMP(3),
 
     CONSTRAINT "job_applications_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "compatible_job_email_logs" (
+    "id" TEXT NOT NULL,
+    "nanny_id" INTEGER NOT NULL,
+    "job_id" INTEGER NOT NULL,
+    "sent_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "compatible_job_email_logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -576,11 +603,14 @@ CREATE TABLE "subscriptions" (
     "current_period_end" TIMESTAMP(3) NOT NULL,
     "cancel_at_period_end" BOOLEAN NOT NULL DEFAULT false,
     "canceled_at" TIMESTAMP(3),
+    "cancellation_reason" "CancellationReason",
+    "cancellation_feedback" TEXT,
     "payment_gateway" "PaymentGateway" NOT NULL DEFAULT 'ASAAS',
     "external_customer_id" TEXT,
     "external_subscription_id" TEXT,
     "applied_coupon_id" TEXT,
     "discount_amount" DOUBLE PRECISION,
+    "trial_end_date" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -610,6 +640,26 @@ CREATE TABLE "payments" (
 );
 
 -- CreateTable
+CREATE TABLE "pending_payment_operations" (
+    "id" TEXT NOT NULL,
+    "type" "PaymentOperationType" NOT NULL,
+    "subscription_id" TEXT,
+    "payment_id" TEXT,
+    "external_id" TEXT,
+    "operation_data" JSONB,
+    "status" "PendingOperationStatus" NOT NULL DEFAULT 'PENDING',
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "max_attempts" INTEGER NOT NULL DEFAULT 5,
+    "last_attempt_at" TIMESTAMP(3),
+    "last_error" TEXT,
+    "completed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "pending_payment_operations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "coupons" (
     "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
@@ -622,6 +672,7 @@ CREATE TABLE "coupons" (
     "usage_count" INTEGER NOT NULL DEFAULT 0,
     "applicable_to" "CouponApplicableTo" NOT NULL DEFAULT 'ALL',
     "applicable_plan_ids" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "has_user_restriction" BOOLEAN NOT NULL DEFAULT false,
     "start_date" TIMESTAMP(3) NOT NULL,
     "end_date" TIMESTAMP(3) NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
@@ -644,6 +695,18 @@ CREATE TABLE "coupon_usages" (
     "used_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "coupon_usages_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "coupon_allowed_emails" (
+    "id" TEXT NOT NULL,
+    "coupon_id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "nanny_id" INTEGER,
+    "family_id" INTEGER,
+    "added_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "coupon_allowed_emails_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -745,6 +808,7 @@ CREATE TABLE "notifications" (
     "is_read" BOOLEAN NOT NULL DEFAULT false,
     "read_at" TIMESTAMP(3),
     "review_id" INTEGER,
+    "job_id" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
@@ -805,6 +869,7 @@ CREATE TABLE "validation_requests" (
     "level" "ValidationLevel" NOT NULL DEFAULT 'BASIC',
     "status" "ValidationStatus" NOT NULL DEFAULT 'PENDING',
     "basic_data_result" JSONB,
+    "documentoscopia_result" JSONB,
     "civil_record_result" JSONB,
     "federal_record_result" JSONB,
     "background_check_result" JSONB,
@@ -852,6 +917,35 @@ CREATE TABLE "system_configs" (
     CONSTRAINT "system_configs_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "cancellation_email_logs" (
+    "id" TEXT NOT NULL,
+    "subscription_id" TEXT NOT NULL,
+    "email_type" "CancellationEmailType" NOT NULL,
+    "sent_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "cancellation_email_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "pix_reminder_email_logs" (
+    "id" TEXT NOT NULL,
+    "payment_id" TEXT NOT NULL,
+    "email_type" "PixReminderEmailType" NOT NULL,
+    "sent_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "pix_reminder_email_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "incomplete_profile_email_logs" (
+    "id" TEXT NOT NULL,
+    "nanny_id" INTEGER NOT NULL,
+    "sent_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "incomplete_profile_email_logs_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "admin_users_email_key" ON "admin_users"("email");
 
@@ -866,6 +960,9 @@ CREATE UNIQUE INDEX "nannies_auth_id_key" ON "nannies"("auth_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "nannies_slug_key" ON "nannies"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "nannies_cpf_hash_key" ON "nannies"("cpf_hash");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "nannies_email_verification_token_key" ON "nannies"("email_verification_token");
@@ -886,7 +983,7 @@ CREATE INDEX "nannies_address_id_idx" ON "nannies"("address_id");
 CREATE INDEX "nannies_status_created_at_idx" ON "nannies"("status", "created_at");
 
 -- CreateIndex
-CREATE INDEX "nannies_cpf_validated_idx" ON "nannies"("cpf_validated");
+CREATE INDEX "nannies_document_validated_idx" ON "nannies"("document_validated");
 
 -- CreateIndex
 CREATE INDEX "nannies_personal_data_validated_idx" ON "nannies"("personal_data_validated");
@@ -899,6 +996,9 @@ CREATE UNIQUE INDEX "nanny_availabilities_nanny_id_key" ON "nanny_availabilities
 
 -- CreateIndex
 CREATE UNIQUE INDEX "families_auth_id_key" ON "families"("auth_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "families_cpf_hash_key" ON "families"("cpf_hash");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "families_email_verification_token_key" ON "families"("email_verification_token");
@@ -938,6 +1038,18 @@ CREATE INDEX "job_applications_status_idx" ON "job_applications"("status");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "job_applications_job_id_nanny_id_key" ON "job_applications"("job_id", "nanny_id");
+
+-- CreateIndex
+CREATE INDEX "compatible_job_email_logs_nanny_id_idx" ON "compatible_job_email_logs"("nanny_id");
+
+-- CreateIndex
+CREATE INDEX "compatible_job_email_logs_job_id_idx" ON "compatible_job_email_logs"("job_id");
+
+-- CreateIndex
+CREATE INDEX "compatible_job_email_logs_sent_at_idx" ON "compatible_job_email_logs"("sent_at");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "compatible_job_email_logs_nanny_id_job_id_key" ON "compatible_job_email_logs"("nanny_id", "job_id");
 
 -- CreateIndex
 CREATE INDEX "boosts_nanny_id_idx" ON "boosts"("nanny_id");
@@ -1018,6 +1130,9 @@ CREATE INDEX "subscriptions_status_idx" ON "subscriptions"("status");
 CREATE INDEX "subscriptions_external_subscription_id_idx" ON "subscriptions"("external_subscription_id");
 
 -- CreateIndex
+CREATE INDEX "subscriptions_cancel_at_period_end_status_idx" ON "subscriptions"("cancel_at_period_end", "status");
+
+-- CreateIndex
 CREATE INDEX "payments_nanny_id_idx" ON "payments"("nanny_id");
 
 -- CreateIndex
@@ -1031,6 +1146,18 @@ CREATE INDEX "payments_status_idx" ON "payments"("status");
 
 -- CreateIndex
 CREATE INDEX "payments_external_payment_id_idx" ON "payments"("external_payment_id");
+
+-- CreateIndex
+CREATE INDEX "pending_payment_operations_status_last_attempt_at_idx" ON "pending_payment_operations"("status", "last_attempt_at");
+
+-- CreateIndex
+CREATE INDEX "pending_payment_operations_subscription_id_idx" ON "pending_payment_operations"("subscription_id");
+
+-- CreateIndex
+CREATE INDEX "pending_payment_operations_payment_id_idx" ON "pending_payment_operations"("payment_id");
+
+-- CreateIndex
+CREATE INDEX "pending_payment_operations_type_idx" ON "pending_payment_operations"("type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "coupons_code_key" ON "coupons"("code");
@@ -1049,6 +1176,15 @@ CREATE INDEX "coupon_usages_nanny_id_idx" ON "coupon_usages"("nanny_id");
 
 -- CreateIndex
 CREATE INDEX "coupon_usages_family_id_idx" ON "coupon_usages"("family_id");
+
+-- CreateIndex
+CREATE INDEX "coupon_allowed_emails_coupon_id_idx" ON "coupon_allowed_emails"("coupon_id");
+
+-- CreateIndex
+CREATE INDEX "coupon_allowed_emails_email_idx" ON "coupon_allowed_emails"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "coupon_allowed_emails_coupon_id_email_key" ON "coupon_allowed_emails"("coupon_id", "email");
 
 -- CreateIndex
 CREATE INDEX "audit_logs_admin_user_id_idx" ON "audit_logs"("admin_user_id");
@@ -1144,6 +1280,9 @@ CREATE INDEX "notifications_is_read_idx" ON "notifications"("is_read");
 CREATE INDEX "notifications_created_at_idx" ON "notifications"("created_at");
 
 -- CreateIndex
+CREATE INDEX "notifications_job_id_idx" ON "notifications"("job_id");
+
+-- CreateIndex
 CREATE INDEX "moderation_logs_moderator_id_idx" ON "moderation_logs"("moderator_id");
 
 -- CreateIndex
@@ -1191,6 +1330,24 @@ CREATE INDEX "validation_consent_logs_requested_at_idx" ON "validation_consent_l
 -- CreateIndex
 CREATE UNIQUE INDEX "system_configs_key_key" ON "system_configs"("key");
 
+-- CreateIndex
+CREATE INDEX "cancellation_email_logs_subscription_id_idx" ON "cancellation_email_logs"("subscription_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cancellation_email_logs_subscription_id_email_type_key" ON "cancellation_email_logs"("subscription_id", "email_type");
+
+-- CreateIndex
+CREATE INDEX "pix_reminder_email_logs_payment_id_idx" ON "pix_reminder_email_logs"("payment_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "pix_reminder_email_logs_payment_id_email_type_key" ON "pix_reminder_email_logs"("payment_id", "email_type");
+
+-- CreateIndex
+CREATE INDEX "incomplete_profile_email_logs_nanny_id_idx" ON "incomplete_profile_email_logs"("nanny_id");
+
+-- CreateIndex
+CREATE INDEX "incomplete_profile_email_logs_sent_at_idx" ON "incomplete_profile_email_logs"("sent_at");
+
 -- AddForeignKey
 ALTER TABLE "nannies" ADD CONSTRAINT "nannies_address_id_fkey" FOREIGN KEY ("address_id") REFERENCES "addresses"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -1217,6 +1374,12 @@ ALTER TABLE "job_applications" ADD CONSTRAINT "job_applications_job_id_fkey" FOR
 
 -- AddForeignKey
 ALTER TABLE "job_applications" ADD CONSTRAINT "job_applications_nanny_id_fkey" FOREIGN KEY ("nanny_id") REFERENCES "nannies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "compatible_job_email_logs" ADD CONSTRAINT "compatible_job_email_logs_nanny_id_fkey" FOREIGN KEY ("nanny_id") REFERENCES "nannies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "compatible_job_email_logs" ADD CONSTRAINT "compatible_job_email_logs_job_id_fkey" FOREIGN KEY ("job_id") REFERENCES "jobs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "documents" ADD CONSTRAINT "documents_family_id_fkey" FOREIGN KEY ("family_id") REFERENCES "families"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1261,6 +1424,12 @@ ALTER TABLE "payments" ADD CONSTRAINT "payments_family_id_fkey" FOREIGN KEY ("fa
 ALTER TABLE "payments" ADD CONSTRAINT "payments_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "pending_payment_operations" ADD CONSTRAINT "pending_payment_operations_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pending_payment_operations" ADD CONSTRAINT "pending_payment_operations_payment_id_fkey" FOREIGN KEY ("payment_id") REFERENCES "payments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "coupons" ADD CONSTRAINT "coupons_created_by_id_fkey" FOREIGN KEY ("created_by_id") REFERENCES "admin_users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1274,6 +1443,15 @@ ALTER TABLE "coupon_usages" ADD CONSTRAINT "coupon_usages_family_id_fkey" FOREIG
 
 -- AddForeignKey
 ALTER TABLE "coupon_usages" ADD CONSTRAINT "coupon_usages_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "coupon_allowed_emails" ADD CONSTRAINT "coupon_allowed_emails_coupon_id_fkey" FOREIGN KEY ("coupon_id") REFERENCES "coupons"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "coupon_allowed_emails" ADD CONSTRAINT "coupon_allowed_emails_nanny_id_fkey" FOREIGN KEY ("nanny_id") REFERENCES "nannies"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "coupon_allowed_emails" ADD CONSTRAINT "coupon_allowed_emails_family_id_fkey" FOREIGN KEY ("family_id") REFERENCES "families"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_admin_user_id_fkey" FOREIGN KEY ("admin_user_id") REFERENCES "admin_users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1312,6 +1490,9 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_nanny_id_fkey" FOREIGN
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_family_id_fkey" FOREIGN KEY ("family_id") REFERENCES "families"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_job_id_fkey" FOREIGN KEY ("job_id") REFERENCES "jobs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "moderation_logs" ADD CONSTRAINT "moderation_logs_moderator_id_fkey" FOREIGN KEY ("moderator_id") REFERENCES "admin_users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1340,3 +1521,12 @@ ALTER TABLE "document_uploads" ADD CONSTRAINT "document_uploads_nanny_id_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "validation_consent_logs" ADD CONSTRAINT "validation_consent_logs_nanny_id_fkey" FOREIGN KEY ("nanny_id") REFERENCES "nannies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cancellation_email_logs" ADD CONSTRAINT "cancellation_email_logs_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pix_reminder_email_logs" ADD CONSTRAINT "pix_reminder_email_logs_payment_id_fkey" FOREIGN KEY ("payment_id") REFERENCES "payments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "incomplete_profile_email_logs" ADD CONSTRAINT "incomplete_profile_email_logs_nanny_id_fkey" FOREIGN KEY ("nanny_id") REFERENCES "nannies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
