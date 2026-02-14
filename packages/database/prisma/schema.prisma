@@ -126,6 +126,7 @@ model Nanny {
   deletedAt                           DateTime?                 @map("deleted_at")
   lastActivityAt                      DateTime?                 @map("last_activity_at")
   isProfilePublic                     Boolean                   @default(true) @map("is_profile_public")
+  triggerTrialUsedAt                  DateTime?                 @map("trigger_trial_used_at")
 
   address           Address?           @relation(fields: [addressId], references: [id])
   documents         Document[]
@@ -282,6 +283,7 @@ model Family {
   updatedAt             DateTime?             @updatedAt @map("updated_at")
   deletedAt             DateTime?             @map("deleted_at")
   lastActivityAt        DateTime?             @map("last_activity_at")
+  triggerTrialUsedAt    DateTime?             @map("trigger_trial_used_at")
 
   address             Address?             @relation(fields: [addressId], references: [id])
   children            ChildFamily[]

@@ -5,12 +5,14 @@
  *
  * Shows when user tries to access a blocked feature
  * Different content based on whether user is logged in or not
+ * If logged in + eligible for trigger trial, shows trial offer
  */
 
 import {
   PiChatCircle,
   PiCheckCircle,
   PiCrown,
+  PiGift,
   PiHeart,
   PiLock,
   PiMagnifyingGlass,
@@ -27,7 +29,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/shadcn/dialog';
+import { useTrialEligibility } from '@/hooks/useTrialEligibility';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -62,6 +67,19 @@ export function PaywallModal({
 }: PaywallModalProps) {
   const featureTitle = FEATURE_TITLES[feature] || 'Acessar Recurso';
   const featureDesc = FEATURE_DESCRIPTIONS[feature] || 'para acessar este recurso';
+  const router = useRouter();
+  const { eligible, trialDays, isLoading, activateTrial, isActivating } = useTrialEligibility();
+
+  const handleActivateTrial = async () => {
+    const result = await activateTrial();
+    if (result.success) {
+      toast.success(result.message || 'Período de teste ativado!');
+      onClose();
+      router.refresh();
+    } else {
+      toast.error(result.message || 'Erro ao ativar período de teste');
+    }
+  };
 
   if (!isLoggedIn) {
     // User is not logged in - show signup CTA
@@ -151,7 +169,83 @@ export function PaywallModal({
     );
   }
 
-  // User is logged in but doesn't have paid plan
+  // User is logged in + eligible for trigger trial
+  if (eligible && !isLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mx-auto mb-2 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-400 to-purple-500">
+              <PiGift className="size-8 text-white" />
+            </div>
+            <DialogTitle className="text-center text-xl">
+              Experimente o Plus Grátis!
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {trialDays} dias com todos os recursos, sem compromisso
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Trial Benefits */}
+            <div className="rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/30 p-4">
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-3">
+                  <PiCheckCircle className="size-5 shrink-0 text-fuchsia-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Chat ilimitado com babás
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <PiCheckCircle className="size-5 shrink-0 text-fuchsia-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Pontuação de match personalizada
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <PiCheckCircle className="size-5 shrink-0 text-fuchsia-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Ver todas as avaliações
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <PiCheckCircle className="size-5 shrink-0 text-fuchsia-600" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Criar até 3 vagas
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="space-y-2">
+              <Button
+                className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700"
+                size="lg"
+                onClick={handleActivateTrial}
+                disabled={isActivating}
+              >
+                <PiGift className="mr-2 size-5" />
+                {isActivating ? 'Ativando...' : `Ativar ${trialDays} dias grátis`}
+              </Button>
+              <Button variant="ghost" className="w-full" size="sm" asChild>
+                <Link href="/app/assinatura">
+                  Ou assine agora
+                </Link>
+              </Button>
+            </div>
+
+            {/* Trust */}
+            <p className="text-center text-xs text-gray-500">
+              Sem cartão de crédito. Sem compromisso. Cancela automaticamente.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // User is logged in but doesn't have paid plan (and no trial available)
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -233,9 +327,6 @@ export function PaywallModal({
                 <span className="text-xs text-gray-500">/trimestre</span>
               </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Inclui boost mensal e destaque nas vagas
-            </p>
           </div>
 
           {/* CTAs */}

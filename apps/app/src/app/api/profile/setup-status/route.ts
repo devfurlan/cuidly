@@ -185,7 +185,7 @@ export async function GET() {
     const subscriptionParams = getSubscriptionParams(currentUser);
     const subscription = await getSubscription(subscriptionParams);
     const hasProSubscription =
-      subscription?.status === 'ACTIVE' &&
+      (subscription?.status === 'ACTIVE' || subscription?.status === 'TRIALING') &&
       (subscription.plan === 'NANNY_PRO' || subscription.plan === 'FAMILY_PLUS');
 
     if (currentUser.type === 'nanny') {

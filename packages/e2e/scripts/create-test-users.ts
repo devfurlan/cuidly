@@ -699,6 +699,42 @@ async function main() {
     console.log(`  ✅ Allowed email ${allowedEmail} added to EXCLUSIVO coupon`);
   }
 
+  // ─── Step 9: Create SystemConfig for trigger trials ──────────
+  console.log('\n⚙️  Creating SystemConfig entries...');
+
+  const systemConfigs = [
+    {
+      key: 'trigger_trial_enabled',
+      value: 'true',
+      type: 'boolean',
+      label: 'Trigger Trial Habilitado',
+      description: 'Liga/desliga o sistema de trigger trials',
+    },
+    {
+      key: 'trigger_trial_family_days',
+      value: '7',
+      type: 'number',
+      label: 'Dias de Trial (Família)',
+      description: 'Duração do trigger trial para famílias',
+    },
+    {
+      key: 'trigger_trial_nanny_days',
+      value: '7',
+      type: 'number',
+      label: 'Dias de Trial (Babá)',
+      description: 'Duração do trigger trial para babás',
+    },
+  ];
+
+  for (const config of systemConfigs) {
+    await prisma.systemConfig.upsert({
+      where: { key: config.key },
+      update: { value: config.value },
+      create: config,
+    });
+    console.log(`  ✅ SystemConfig ${config.key} = ${config.value}`);
+  }
+
   await prisma.$disconnect();
   console.log('\n✅ Test data setup complete.');
 }

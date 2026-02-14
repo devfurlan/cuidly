@@ -1,9 +1,13 @@
 'use client';
 
 import { cn } from '@cuidly/shared';
-import { PiX, PiMinus } from 'react-icons/pi';
+import { useRouter } from 'next/navigation';
+import { PiX, PiMinus, PiSparkle } from 'react-icons/pi';
+import { toast } from 'sonner';
 import { Card, CardContent, CardHeader } from '@/components/ui/shadcn/card';
+import { Button } from '@/components/ui/shadcn/button';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { useTrialEligibility } from '@/hooks/useTrialEligibility';
 import { ProfileSetupProgress } from './ProfileSetupProgress';
 import { ProfileSetupTaskItem } from './ProfileSetupTaskItem';
 import { NANNY_TASK_CONFIGS } from './nanny-tasks';
@@ -21,7 +25,20 @@ export function ProfileSetupWidgetContent({
   onMinimize,
   onDismiss,
 }: ProfileSetupWidgetContentProps) {
+  const router = useRouter();
   const taskConfigs = data.userType === 'nanny' ? NANNY_TASK_CONFIGS : FAMILY_TASK_CONFIGS;
+  const { eligible: trialEligible, trialDays, activateTrial, isActivating } = useTrialEligibility();
+  const isProfileComplete = data.completedTasks === data.totalTasks && data.totalTasks > 0;
+
+  const handleActivateTrial = async () => {
+    const result = await activateTrial();
+    if (result.success) {
+      toast.success(result.message || 'Período de teste ativado!');
+      router.refresh();
+    } else {
+      toast.error(result.message || 'Erro ao ativar período de teste');
+    }
+  };
 
   // Enrich tasks with href from configs
   const enrichedTasks: ProfileTask[] = data.tasks.map((task) => ({
@@ -90,6 +107,24 @@ export function ProfileSetupWidgetContent({
             </p>
           )}
         </div>
+
+        {/* Trial offer when profile is 100% complete */}
+        {isProfileComplete && data.userType === 'nanny' && trialEligible && (
+          <div className="mb-4 rounded-lg border border-fuchsia-200 bg-fuchsia-50/50 p-3">
+            <p className="mb-2 text-sm font-medium text-fuchsia-700">
+              Perfil completo! Experimente o Pro grátis por {trialDays} dias.
+            </p>
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={handleActivateTrial}
+              disabled={isActivating}
+            >
+              <PiSparkle className="mr-1 size-4" />
+              {isActivating ? 'Ativando...' : `Ativar ${trialDays} dias grátis`}
+            </Button>
+          </div>
+        )}
 
         {/* Task list */}
         <ScrollArea className="h-64">

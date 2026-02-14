@@ -44,6 +44,29 @@ function isActiveStatus(status: string | null | undefined): boolean {
   return status === 'ACTIVE' || status === 'TRIALING';
 }
 
+/**
+ * Check if a subscription is on a paid plan and active (including trials)
+ * Both ACTIVE and TRIALING are considered active for feature access
+ */
+export function hasActivePaidSubscription(
+  subscription: { plan: string; status: string } | null | undefined
+): boolean {
+  if (!subscription) return false;
+  const isPaidPlan = subscription.plan === 'NANNY_PRO' || subscription.plan === 'FAMILY_PLUS';
+  return isPaidPlan && (subscription.status === 'ACTIVE' || subscription.status === 'TRIALING');
+}
+
+/**
+ * Check if a nanny has an active Pro subscription (including trials)
+ * Used for seal eligibility: both ACTIVE and TRIALING count
+ */
+export function hasActiveProSubscription(
+  subscription: { plan: string; status: string } | null | undefined
+): boolean {
+  if (!subscription || subscription.plan !== 'NANNY_PRO') return false;
+  return subscription.status === 'ACTIVE' || subscription.status === 'TRIALING';
+}
+
 export async function hasActiveSubscription(lookup: SubscriptionLookup): Promise<boolean> {
   const subscription = await prisma.subscription.findFirst({
     where: {

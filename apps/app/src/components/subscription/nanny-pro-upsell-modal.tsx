@@ -31,6 +31,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@/components/ui/shadcn/dialog';
+import { useTrialEligibility } from '@/hooks/useTrialEligibility';
+import { toast } from 'sonner';
 
 interface NannyProUpsellModalProps {
   isOpen: boolean;
@@ -89,6 +91,18 @@ export function NannyProUpsellModal({
     'YEAR',
   );
   const featureInfo = featureMessages[feature];
+  const { eligible: trialEligible, trialDays, activateTrial, isActivating } = useTrialEligibility();
+
+  const handleActivateTrial = async () => {
+    const result = await activateTrial();
+    if (result.success) {
+      toast.success(result.message || 'Período de teste ativado!');
+      onClose();
+      router.refresh();
+    } else {
+      toast.error(result.message || 'Erro ao ativar período de teste');
+    }
+  };
 
   const handleSubscribe = async () => {
     setIsCheckingPending(true);
@@ -239,25 +253,55 @@ export function NannyProUpsellModal({
             </ul>
           </div>
 
-          {/* CTA */}
-          <Button
-            onClick={handleSubscribe}
-            disabled={isCheckingPending}
-            className="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-600 hover:to-purple-700"
-            size="lg"
-          >
-            {isCheckingPending ? (
-              <>
-                <PiCircleNotch className="size-4 animate-spin" />
-                Carregando...
-              </>
-            ) : (
-              <>
-                <PiCrown className="size-4" />
-                Assinar Pro
-              </>
-            )}
-          </Button>
+          {/* Trial Offer or Subscribe CTA */}
+          {trialEligible ? (
+            <>
+              <Button
+                onClick={handleActivateTrial}
+                disabled={isActivating}
+                className="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-600 hover:to-purple-700"
+                size="lg"
+              >
+                {isActivating ? (
+                  <>
+                    <PiCircleNotch className="size-4 animate-spin" />
+                    Ativando...
+                  </>
+                ) : (
+                  <>
+                    <PiSparkle className="size-4" />
+                    Experimentar {trialDays} dias grátis
+                  </>
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={handleSubscribe}
+                className="mt-2 w-full text-center text-sm text-fuchsia-600 hover:text-fuchsia-700"
+              >
+                Ou assine agora
+              </button>
+            </>
+          ) : (
+            <Button
+              onClick={handleSubscribe}
+              disabled={isCheckingPending}
+              className="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white hover:from-fuchsia-600 hover:to-purple-700"
+              size="lg"
+            >
+              {isCheckingPending ? (
+                <>
+                  <PiCircleNotch className="size-4 animate-spin" />
+                  Carregando...
+                </>
+              ) : (
+                <>
+                  <PiCrown className="size-4" />
+                  Assinar Pro
+                </>
+              )}
+            </Button>
+          )}
 
           {/* Dismiss */}
           <button
@@ -270,7 +314,7 @@ export function NannyProUpsellModal({
 
           {/* Trust badge */}
           <p className="mt-3 text-center text-xs text-gray-400">
-            Cancele quando quiser. Sem compromisso.
+            {trialEligible ? 'Sem cartão. Sem compromisso. Cancela automaticamente.' : 'Cancele quando quiser. Sem compromisso.'}
           </p>
         </div>
       </DialogContent>

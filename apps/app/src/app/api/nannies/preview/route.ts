@@ -104,7 +104,7 @@ export async function GET() {
 
       // Calculate seal
       const hasProSubscription = nanny.subscription?.plan === 'NANNY_PRO' &&
-        nanny.subscription?.status === 'ACTIVE';
+        (nanny.subscription?.status === 'ACTIVE' || nanny.subscription?.status === 'TRIALING');
 
       const { seal } = calculateNannySeal(
         {

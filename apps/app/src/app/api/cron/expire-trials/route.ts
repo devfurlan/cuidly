@@ -71,12 +71,22 @@ export async function GET(request: NextRequest) {
       const hasPaymentGateway = !!subscription.externalSubscriptionId;
 
       if (!hasPaymentGateway) {
-        // Cardless trial (no Asaas subscription) - expire immediately
-        console.log(`[CRON] Cardless trial ${subscription.id} expired, marking as EXPIRED`);
+        // Cardless trial (no Asaas subscription) - downgrade to free plan
+        const freePlan = subscription.nannyId ? 'NANNY_FREE' : 'FAMILY_FREE';
+        const farFuture = new Date();
+        farFuture.setFullYear(farFuture.getFullYear() + 100);
+
+        console.log(`[CRON] Cardless trial ${subscription.id} expired, downgrading to ${freePlan}`);
 
         await prisma.subscription.update({
           where: { id: subscription.id },
-          data: { status: 'EXPIRED' },
+          data: {
+            plan: freePlan,
+            status: 'ACTIVE',
+            trialEndDate: null,
+            currentPeriodEnd: farFuture,
+            paymentGateway: 'MANUAL',
+          },
         });
 
         results.push({

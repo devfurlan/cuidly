@@ -138,12 +138,13 @@ export function hasCompletedOnboarding(user: CurrentUser): boolean {
 
 /**
  * Check if user has an active PRO subscription (not free plan).
+ * Both ACTIVE and TRIALING subscriptions are considered active.
  */
 export function hasActiveSubscription(user: CurrentUser): boolean {
   if (!user) return false;
   const subscription =
     user.type === 'nanny' ? user.nanny.subscription : user.family.subscription;
-  if (subscription?.status !== 'ACTIVE') return false;
+  if (subscription?.status !== 'ACTIVE' && subscription?.status !== 'TRIALING') return false;
   // Verificar se é plano pago (Pro/Plus), não free
   return subscription.plan === 'NANNY_PRO' || subscription.plan === 'FAMILY_PLUS';
 }

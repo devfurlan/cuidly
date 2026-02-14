@@ -187,7 +187,7 @@ export const getNannyBySlug = cache(async (slug: string): Promise<NannyProfileDa
 
     // Check premium and verified status
     const hasPremium = nanny.subscription &&
-      nanny.subscription.status === 'ACTIVE' &&
+      (nanny.subscription.status === 'ACTIVE' || nanny.subscription.status === 'TRIALING') &&
       new Date(nanny.subscription.currentPeriodEnd) > now;
 
     const isVerified = nanny.documentValidated && nanny.personalDataValidated;

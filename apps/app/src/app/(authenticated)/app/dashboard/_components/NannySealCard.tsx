@@ -182,7 +182,7 @@ export function NannySealCard({ nanny }: NannySealCardProps) {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   const hasProSubscription =
-    nanny.subscription?.status === 'ACTIVE' &&
+    (nanny.subscription?.status === 'ACTIVE' || nanny.subscription?.status === 'TRIALING') &&
     nanny.subscription?.plan === 'NANNY_PRO';
 
   const sealInput: NannySealInput = {

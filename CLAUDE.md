@@ -184,7 +184,6 @@ Mensagem implícita:
 ❌ Avaliações completas
 ❌ Chat ilimitado
 ❌ Matching inteligente
-❌ Boost de vaga
 
 Aqui a família **quase resolve**, mas:
 - só pode conversar com 1 babá
@@ -201,7 +200,6 @@ Aqui a família **quase resolve**, mas:
 ✅ **Tudo do Básico**
 ✅ **Matching inteligente**
 ✅ **Chat ilimitado**
-✅ **1 Boost por mês** (vaga no topo por 7 dias)
 ✅ Criar até **3 vagas ativas** (30 dias)
 ✅ Ver **avaliações completas**
 ✅ Notificações de candidaturas

@@ -18,7 +18,7 @@ export default async function ProfilePage() {
   if (user.type === 'nanny') {
     const profile = await getNannyProfile(user.nanny.id);
     const hasActiveSubscription =
-      user.nanny.subscription?.status === 'ACTIVE' &&
+      (user.nanny.subscription?.status === 'ACTIVE' || user.nanny.subscription?.status === 'TRIALING') &&
       user.nanny.subscription?.plan === 'NANNY_PRO';
 
     return (
@@ -33,7 +33,7 @@ export default async function ProfilePage() {
   // Family
   const profile = await getFamilyProfile(user.family.id);
   const hasActiveSubscription =
-    user.family.subscription?.status === 'ACTIVE' &&
+    (user.family.subscription?.status === 'ACTIVE' || user.family.subscription?.status === 'TRIALING') &&
     user.family.subscription?.plan === 'FAMILY_PLUS';
 
   return (

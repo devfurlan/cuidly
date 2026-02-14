@@ -38,9 +38,9 @@ export default function TopBanner() {
         />
       </div>
       <p className="text-sm/6 text-blue-800">
-        <a href="/babas" className="flex items-center gap-x-2 hover:text-blue-600">
+        <a href="/promo/babas" className="flex items-center gap-x-2 hover:text-blue-600">
           <strong className="font-semibold">É babá?</strong>
-          <span className="font-medium">3 meses Pro grátis!</span>
+          <span className="font-medium">1 mês Pro grátis!</span>
           <PiArrowRight className="size-4" />
         </a>
       </p>
