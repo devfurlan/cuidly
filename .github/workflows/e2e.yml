@@ -95,7 +95,7 @@ jobs:
       - name: Run E2E tests
         run: |
           # Start the app in production mode
-          pnpm --filter @cuidly/app start -- -p 3300 &
+          PORT=3300 pnpm --filter @cuidly/app start &
           APP_PID=$!
 
           # Wait for the app to be ready
