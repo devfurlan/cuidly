@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { apolloClient } from '@/lib/api-clients/apollo';
+import { getApolloClient } from '@/lib/api-clients/apollo';
 import { gql } from '@apollo/client';
 // import { PrismaClient } from '@prisma/client';
 
@@ -14,7 +14,7 @@ interface WordPressPost {
 
 async function getAllPosts(): Promise<WordPressPost[]> {
   try {
-    const { data } = await apolloClient.query({
+    const { data } = await getApolloClient().query({
       query: gql`
         query GetAllPostsForSitemap {
           posts(first: 1000) {

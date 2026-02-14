@@ -19,6 +19,7 @@ env:
   ASAAS_ACCESS_TOKEN: ${{ secrets.TEST_ASAAS_ACCESS_TOKEN }}
   ASAAS_WALLET_ID: ${{ secrets.TEST_ASAAS_WALLET_ID }}
   NEXT_PUBLIC_APP_URL: ${{ secrets.TEST_NEXT_PUBLIC_APP_URL }}
+  NEXT_PUBLIC_WORDPRESS_API_URL: https://apiblog.cuidly.app
 
 jobs:
   e2e:
@@ -79,6 +80,7 @@ jobs:
           ASAAS_ACCESS_TOKEN=${ASAAS_ACCESS_TOKEN}
           ASAAS_WALLET_ID=${ASAAS_WALLET_ID}
           NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+          NEXT_PUBLIC_WORDPRESS_API_URL=${NEXT_PUBLIC_WORDPRESS_API_URL}
           EOF
 
       - name: Reset test database

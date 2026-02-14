@@ -1,5 +1,5 @@
 import { BlogPost, BlogPosts } from '@/app/(public-pages)/blog/types';
-import { apolloClient } from '@/lib/api-clients/apollo';
+import { getApolloClient } from '@/lib/api-clients/apollo';
 import { gql } from '@apollo/client';
 
 const POSTS_PER_PAGE = parseInt(
@@ -16,7 +16,7 @@ export async function getPaginatedPosts(
   const offset = (page - 1) * perPage;
 
   // Busca total de posts
-  const totalQuery = await apolloClient.query({
+  const totalQuery = await getApolloClient().query({
     query: gql`
       query {
         posts {
@@ -34,7 +34,7 @@ export async function getPaginatedPosts(
   const totalPages = Math.ceil(total / perPage);
 
   // Busca posts atuais
-  const { data } = await apolloClient.query({
+  const { data } = await getApolloClient().query({
     query: gql`
       query GetPosts($first: Int!, $after: String) {
         posts(first: $first, after: $after) {
@@ -67,7 +67,7 @@ export async function getPaginatedPosts(
 
 export async function getPostBySlug(slug: string): Promise<BlogPost> {
   try {
-    const { data } = await apolloClient.query({
+    const { data } = await getApolloClient().query({
       query: gql`
         query GetPostBySlug($slug: String!) {
           postBy(slug: $slug) {
@@ -124,7 +124,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost> {
 
 export async function getRelatedPosts(currentId: number, limit = 4) {
   try {
-    const { data } = await apolloClient.query({
+    const { data } = await getApolloClient().query({
       query: gql`
         query GetAllPosts {
           posts(first: ${limit}) {
@@ -159,7 +159,7 @@ export async function getRelatedPosts(currentId: number, limit = 4) {
 }
 
 export async function getLatestPosts(limit = 5): Promise<BlogPosts> {
-  const { data } = await apolloClient.query({
+  const { data } = await getApolloClient().query({
     query: gql`
       query {
         posts(first: ${limit}) {
@@ -184,7 +184,7 @@ export async function getLatestPosts(limit = 5): Promise<BlogPosts> {
 
 export async function getAllPostSlugs(): Promise<string[]> {
   try {
-    const { data } = await apolloClient.query({
+    const { data } = await getApolloClient().query({
       query: gql`
         query GetAllPostSlugs {
           posts(first: 1000) {
