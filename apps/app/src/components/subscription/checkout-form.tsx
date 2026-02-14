@@ -76,6 +76,9 @@ interface CouponValidation {
   originalAmount?: number;
   finalAmount?: number;
   message?: string;
+  isFreeTrial?: boolean;
+  trialDays?: number;
+  requiresCreditCard?: boolean;
 }
 
 interface PixData {
@@ -163,6 +166,40 @@ export function CheckoutForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billingInterval]);
 
+  // Cardless trial: free trial coupon that does NOT require credit card
+  const isCardlessTrial = couponValidation?.isValid &&
+    couponValidation.isFreeTrial &&
+    couponValidation.requiresCreditCard === false;
+
+  const handleActivateTrial = async () => {
+    setIsProcessing(true);
+
+    try {
+      const response = await fetch('/api/subscription/activate-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan,
+          billingInterval,
+          couponCode: couponCode.trim().toUpperCase(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        toast.success(result.message || 'Período de teste ativado com sucesso!');
+        onSuccess?.();
+      } else {
+        toast.error(result.error || 'Erro ao ativar período de teste');
+      }
+    } catch {
+      toast.error('Erro ao ativar período de teste. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -193,6 +230,9 @@ export function CheckoutForm({
           discountAmount: data.discountAmount,
           originalAmount: data.originalAmount,
           finalAmount: data.finalAmount,
+          isFreeTrial: data.isFreeTrial,
+          trialDays: data.trialDays,
+          requiresCreditCard: data.requiresCreditCard,
         });
         setShowCouponInput(false);
       } else {
@@ -391,10 +431,54 @@ export function CheckoutForm({
             <h2 className="truncate text-lg font-semibold">
               Assinar {PLAN_LABELS[plan]}
             </h2>
-            <p className="text-sm text-gray-500">Escolha como prefere pagar</p>
+            <p className="text-sm text-gray-500">
+              {isCardlessTrial ? 'Ative seu período de teste' : 'Escolha como prefere pagar'}
+            </p>
           </div>
         </div>
 
+        {isCardlessTrial ? (
+          /* Cardless trial - no payment needed */
+          <div className="flex min-h-0 flex-col lg:flex-1">
+            <div className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
+              <div className="max-w-sm space-y-4 text-center">
+                <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-green-100">
+                  <PiCheckCircle className="size-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Período de teste gratuito
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Este cupom ativa seu período de teste gratuito de{' '}
+                  <strong>{couponValidation?.trialDays} dias</strong>.
+                  Nenhum pagamento será cobrado.
+                </p>
+                <p className="text-xs text-gray-400">
+                  Após o período de teste, você poderá assinar normalmente para continuar com acesso ao plano.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 bg-white px-4 py-4 sm:px-6">
+              <Button
+                type="button"
+                className="w-full bg-gradient-to-r from-fuchsia-500 to-fuchsia-600 py-6 text-white hover:from-fuchsia-600 hover:to-fuchsia-700"
+                onClick={handleActivateTrial}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <PiCircleNotch className="mr-2 size-4 animate-spin" />
+                    Ativando...
+                  </>
+                ) : (
+                  'Ativar Período de Teste Gratuito'
+                )}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          /* Normal payment flow */
+          <>
         {/* Tabs de método de pagamento */}
         <div className="px-4 pb-3 sm:px-6">
           <div className="flex rounded-lg border bg-gray-50 p-1">
@@ -616,6 +700,8 @@ export function CheckoutForm({
             {!pixData && <PaymentFooter isCard={false} />}
           </div>
         )}
+          </>
+        )}
       </div>
 
       {/* Coluna Direita - Resumo do Pedido */}
@@ -766,7 +852,11 @@ export function CheckoutForm({
             <div className="flex items-center justify-between">
               <span className="font-semibold">Total hoje</span>
               <div className="text-right">
-                {couponValidation?.isValid &&
+                {isCardlessTrial ? (
+                  <span className="text-xl font-bold text-green-600">
+                    Grátis
+                  </span>
+                ) : couponValidation?.isValid &&
                 couponValidation.discountAmount ? (
                   <>
                     <span className="text-sm text-gray-400 line-through">
@@ -784,18 +874,20 @@ export function CheckoutForm({
               </div>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              {billingInterval === 'MONTH'
-                ? 'Renovado mensalmente'
-                : `Equivale a ${formatCurrency(monthlyPrice)}/mês · ${getBillingIntervalLabel(billingInterval).renewal}`}
+              {isCardlessTrial
+                ? `Teste gratuito por ${couponValidation?.trialDays} dias`
+                : billingInterval === 'MONTH'
+                  ? 'Renovado mensalmente'
+                  : `Equivale a ${formatCurrency(monthlyPrice)}/mês · ${getBillingIntervalLabel(billingInterval).renewal}`}
             </p>
           </div>
         </div>
 
         {/* Cancelamento */}
         <p className="mt-4 text-xs text-gray-400 lg:mt-6">
-          Para sua comodidade, as próximas cobranças acontecerão de forma
-          automática nesta mesma data. Você poderá cancelar seu plano a qualquer
-          momento que desejar.
+          {isCardlessTrial
+            ? 'Após o período de teste, você poderá assinar normalmente para continuar com acesso ao plano.'
+            : 'Para sua comodidade, as próximas cobranças acontecerão de forma automática nesta mesma data. Você poderá cancelar seu plano a qualquer momento que desejar.'}
         </p>
       </div>
     </div>

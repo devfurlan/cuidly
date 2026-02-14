@@ -60,6 +60,11 @@ export async function POST(req: NextRequest) {
       discountAmount: result.discountAmount,
       originalAmount: result.originalAmount,
       finalAmount: result.finalAmount,
+      ...(result.isFreeTrial && {
+        isFreeTrial: result.isFreeTrial,
+        trialDays: result.trialDays,
+        requiresCreditCard: result.requiresCreditCard,
+      }),
     });
   } catch (error) {
     console.error('Erro ao validar cupom:', error);

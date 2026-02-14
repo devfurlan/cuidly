@@ -564,6 +564,16 @@ async function main() {
       isActive: true,
     },
     {
+      code: 'TRIAL90NOCARD',
+      discountType: 'FREE_TRIAL_DAYS' as const,
+      discountValue: 90,
+      applicableTo: 'NANNIES' as const,
+      requiresCreditCard: false,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
       code: 'INATIVO',
       discountType: 'PERCENTAGE' as const,
       discountValue: 10,

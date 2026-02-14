@@ -45,6 +45,7 @@ const BaseCouponSchema = z.object({
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
   isActive: z.boolean().default(true),
+  requiresCreditCard: z.boolean().default(true),
 });
 
 export const CouponFormSchema = BaseCouponSchema.refine(

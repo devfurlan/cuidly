@@ -68,8 +68,30 @@ export async function GET(request: NextRequest) {
       const userType = subscription.nannyId ? 'nanny' : 'family';
       const userId = subscription.nannyId?.toString() ?? subscription.familyId?.toString() ?? '';
       const trialEndDate = subscription.trialEndDate!;
+      const hasPaymentGateway = !!subscription.externalSubscriptionId;
 
-      // Check if trial is past grace period
+      if (!hasPaymentGateway) {
+        // Cardless trial (no Asaas subscription) - expire immediately
+        console.log(`[CRON] Cardless trial ${subscription.id} expired, marking as EXPIRED`);
+
+        await prisma.subscription.update({
+          where: { id: subscription.id },
+          data: { status: 'EXPIRED' },
+        });
+
+        results.push({
+          subscriptionId: subscription.id,
+          userId,
+          userType,
+          plan: subscription.plan,
+          trialEndDate,
+          action: 'expired',
+        });
+
+        continue;
+      }
+
+      // Trial with Asaas subscription - check grace period
       const isPastGracePeriod = trialEndDate < gracePeriodDate;
 
       if (isPastGracePeriod) {

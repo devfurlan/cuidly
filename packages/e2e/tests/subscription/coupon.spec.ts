@@ -571,3 +571,160 @@ test.describe('Coupon: Checkout Form UI', () => {
     ).toBeVisible({ timeout: 10000 });
   });
 });
+
+// ─── Cardless Trial ───────────────────────────────────────────
+
+const ACTIVATE_TRIAL_URL = '/api/subscription/activate-trial';
+
+test.describe('Coupon: Cardless Trial (API)', () => {
+  test('should return isFreeTrial and requiresCreditCard fields for cardless trial coupon', async ({
+    context,
+    page,
+  }) => {
+    await loginAsNanny(context, page);
+
+    const { status, body } = await validateCoupon(context, {
+      code: 'TRIAL90NOCARD',
+      planId: 'NANNY_PRO',
+      billingInterval: 'MONTH',
+    });
+
+    expect(status).toBe(200);
+    expect(body.isValid).toBe(true);
+    expect(body.isFreeTrial).toBe(true);
+    expect(body.trialDays).toBe(90);
+    expect(body.requiresCreditCard).toBe(false);
+    expect(body.finalAmount).toBe(0);
+  });
+
+  test('should activate trial without credit card via activate-trial endpoint', async ({
+    context,
+    page,
+  }) => {
+    await loginAsNanny(context, page);
+
+    const response = await context.request.post(ACTIVATE_TRIAL_URL, {
+      data: {
+        plan: 'NANNY_PRO',
+        billingInterval: 'MONTH',
+        couponCode: 'TRIAL90NOCARD',
+      },
+    });
+
+    const body = await response.json();
+
+    expect(response.status()).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.status).toBe('TRIALING');
+    expect(body.trialDays).toBe(90);
+    expect(body.trialEndDate).toBeDefined();
+  });
+
+  test('should reject cardless trial for family user (NANNIES-only coupon)', async ({
+    context,
+    page,
+  }) => {
+    await loginAsFamily(context, page);
+
+    const response = await context.request.post(ACTIVATE_TRIAL_URL, {
+      data: {
+        plan: 'FAMILY_PLUS',
+        billingInterval: 'MONTH',
+        couponCode: 'TRIAL90NOCARD',
+      },
+    });
+
+    expect(response.status()).toBe(400);
+  });
+
+  test('should return isFreeTrial with requiresCreditCard true for regular trial coupon', async ({
+    context,
+    page,
+  }) => {
+    await loginAsFamily(context, page);
+
+    const { status, body } = await validateCoupon(context, {
+      code: 'TRIAL7',
+      planId: 'FAMILY_PLUS',
+      billingInterval: 'MONTH',
+    });
+
+    expect(status).toBe(200);
+    expect(body.isValid).toBe(true);
+    expect(body.isFreeTrial).toBe(true);
+    expect(body.trialDays).toBe(7);
+    expect(body.requiresCreditCard).toBe(true);
+  });
+});
+
+// ─── Cardless Trial: Checkout UI ─────────────────────────────
+
+test.describe('Coupon: Cardless Trial Checkout UI', () => {
+  async function openNannyCheckout(
+    context: import('@playwright/test').BrowserContext,
+    page: import('@playwright/test').Page,
+  ) {
+    await page.route('**/api/payments/pending', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ hasPending: false }),
+      }),
+    );
+
+    await loginAsNanny(context, page);
+    await page.goto('/app/assinatura');
+
+    // Open upsell modal
+    const upgradeBtn = page.getByRole('button', { name: /Fazer Upgrade/i });
+    await expect(upgradeBtn).toBeVisible({ timeout: 15000 });
+    await upgradeBtn.click();
+
+    // Click "Assinar Pro" to open checkout
+    const assinarBtn = page.getByRole('button', { name: /Assinar Pro/i });
+    await expect(assinarBtn).toBeVisible({ timeout: 10000 });
+    await assinarBtn.click();
+
+    // Wait for checkout form to load
+    await expect(page.getByText('Cartão').first()).toBeVisible({
+      timeout: 10000,
+    });
+  }
+
+  test('should hide payment fields when cardless trial coupon is applied', async ({
+    context,
+    page,
+  }) => {
+    await openNannyCheckout(context, page);
+
+    // Open coupon input
+    await page.getByText('Adicionar cupom').click();
+
+    // Type coupon code
+    const couponInput = page.getByPlaceholder('Código');
+    await couponInput.fill('TRIAL90NOCARD');
+
+    // Click apply
+    await page.getByRole('button', { name: /Aplicar/i }).click();
+
+    // Should show applied coupon badge
+    await expect(page.getByText('TRIAL90NOCARD').first()).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Payment tabs (Cartão/PIX) should be hidden
+    await expect(page.getByText('Cartão').first()).not.toBeVisible();
+    await expect(page.getByText('PIX').first()).not.toBeVisible();
+
+    // Should show trial activation button
+    await expect(
+      page.getByRole('button', { name: /Ativar Período de Teste Gratuito/i }),
+    ).toBeVisible();
+
+    // Should show trial days info
+    await expect(page.getByText(/90 dias/).first()).toBeVisible();
+
+    // Should show "Grátis" instead of price
+    await expect(page.getByText('Grátis').first()).toBeVisible();
+  });
+});

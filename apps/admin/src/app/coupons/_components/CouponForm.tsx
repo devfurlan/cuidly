@@ -103,6 +103,7 @@ export function CouponForm({
         ? new Date(defaultValues.endDate)
         : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       isActive: defaultValues?.isActive ?? true,
+      requiresCreditCard: defaultValues?.requiresCreditCard ?? true,
     },
   });
 
@@ -335,6 +336,33 @@ export function CouponForm({
                       Limite máximo do desconto em reais (ex: 20% até R$ 50)
                     </FormDescription>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {watchDiscountType === 'FREE_TRIAL_DAYS' && (
+              <FormField
+                control={form.control}
+                name="requiresCreditCard"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Requer cartão de crédito
+                      </FormLabel>
+                      <FormDescription>
+                        Se desativado, o usuário pode ativar o trial sem informar
+                        cartão de crédito. A assinatura expira automaticamente ao
+                        final do período.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

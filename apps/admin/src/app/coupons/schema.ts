@@ -2,7 +2,7 @@ export type Coupon = {
   id: string;
   code: string;
   description: string | null;
-  discountType: 'PERCENTAGE' | 'FIXED';
+  discountType: 'PERCENTAGE' | 'FIXED' | 'FREE_TRIAL_DAYS';
   discountValue: number;
   maxDiscount: number | null;
   minPurchaseAmount: number | null;
@@ -10,9 +10,11 @@ export type Coupon = {
   usageCount: number;
   applicableTo: 'ALL' | 'FAMILIES' | 'NANNIES' | 'SPECIFIC_PLAN';
   applicablePlanIds: string[];
+  hasUserRestriction: boolean;
   startDate: Date;
   endDate: Date;
   isActive: boolean;
+  requiresCreditCard: boolean;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

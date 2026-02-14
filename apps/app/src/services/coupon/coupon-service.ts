@@ -32,6 +32,8 @@ export interface ValidateCouponResult {
   trialDays?: number;
   /** Flag indicating this is a free trial coupon */
   isFreeTrial?: boolean;
+  /** Whether the trial coupon requires a credit card */
+  requiresCreditCard?: boolean;
 }
 
 export type CouponErrorCode =
@@ -187,6 +189,7 @@ export async function validateCoupon(
       finalAmount: 0, // No charge during trial
       trialDays: coupon.discountValue,
       isFreeTrial: true,
+      requiresCreditCard: coupon.requiresCreditCard,
     };
   }
 

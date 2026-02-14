@@ -206,6 +206,7 @@ async function handlePut(request: Request, context: RouteContext) {
           startDate: data.startDate,
           endDate: data.endDate,
           isActive: data.isActive,
+          requiresCreditCard: data.requiresCreditCard,
         },
       });
 

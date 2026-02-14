@@ -135,6 +135,7 @@ async function handlePost(request: Request) {
           startDate: data.startDate,
           endDate: data.endDate,
           isActive: data.isActive,
+          requiresCreditCard: data.requiresCreditCard,
           createdById: admin.id,
         },
       });
