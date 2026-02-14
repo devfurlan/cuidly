@@ -507,6 +507,188 @@ async function main() {
     }
   }
 
+  // ─── Step 8: Create test coupons ──────────────────────────────
+  console.log('\n🏷️  Creating test coupons...');
+
+  const now = new Date();
+  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+  const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+  const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+  const twoYearsFromNow = new Date(now.getFullYear() + 2, now.getMonth(), now.getDate());
+
+  const testCoupons = [
+    {
+      code: 'TESTE20',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 20,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'TESTE50CAP',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 50,
+      maxDiscount: 10,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'FIXO15',
+      discountType: 'FIXED' as const,
+      discountValue: 15,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'FIXO999',
+      discountType: 'FIXED' as const,
+      discountValue: 999,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'TRIAL7',
+      discountType: 'FREE_TRIAL_DAYS' as const,
+      discountValue: 7,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'INATIVO',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: false,
+    },
+    {
+      code: 'EXPIRADO',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'ALL' as const,
+      startDate: twoYearsAgo,
+      endDate: oneYearAgo,
+      isActive: true,
+    },
+    {
+      code: 'FUTURO',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearFromNow,
+      endDate: twoYearsFromNow,
+      isActive: true,
+    },
+    {
+      code: 'LIMITADO',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'ALL' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+      usageLimit: 1,
+      usageCount: 1,
+    },
+    {
+      code: 'FAMILIA10',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'FAMILIES' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'BABA10',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'NANNIES' as const,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'PLUSONLY',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 15,
+      applicableTo: 'SPECIFIC_PLAN' as const,
+      applicablePlanIds: ['FAMILY_PLUS'],
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'MIN100',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 10,
+      applicableTo: 'ALL' as const,
+      minPurchaseAmount: 100,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+    {
+      code: 'EXCLUSIVO',
+      discountType: 'PERCENTAGE' as const,
+      discountValue: 25,
+      applicableTo: 'ALL' as const,
+      hasUserRestriction: true,
+      startDate: oneYearAgo,
+      endDate: oneYearFromNow,
+      isActive: true,
+    },
+  ];
+
+  for (const coupon of testCoupons) {
+    const { code, ...data } = coupon;
+    await prisma.coupon.upsert({
+      where: { code },
+      update: {
+        ...data,
+      },
+      create: {
+        code,
+        ...data,
+      },
+    });
+    console.log(`  ✅ Coupon ${code} created/updated`);
+  }
+
+  // Create allowed email for EXCLUSIVO coupon
+  const exclusivoCoupon = await prisma.coupon.findUnique({
+    where: { code: 'EXCLUSIVO' },
+  });
+
+  if (exclusivoCoupon) {
+    const allowedEmail = 'familia-teste@cuidly.com';
+    await prisma.couponAllowedEmail.upsert({
+      where: {
+        couponId_email: {
+          couponId: exclusivoCoupon.id,
+          email: allowedEmail,
+        },
+      },
+      update: {},
+      create: {
+        couponId: exclusivoCoupon.id,
+        email: allowedEmail,
+      },
+    });
+    console.log(`  ✅ Allowed email ${allowedEmail} added to EXCLUSIVO coupon`);
+  }
+
   await prisma.$disconnect();
   console.log('\n✅ Test data setup complete.');
 }
