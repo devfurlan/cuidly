@@ -28,30 +28,24 @@ export default function Header() {
           </div>
 
           <nav className="hidden items-center space-x-8 md:flex">
-            <a
-              href="#inicio"
+            <Link
+              href="/babas"
               className="text-gray-700 transition-colors hover:text-fuchsia-600"
             >
-              Início
-            </a>
-            <a
-              href="#como-funciona"
+              Para Babás
+            </Link>
+            <Link
+              href="/como-funciona"
               className="text-gray-700 transition-colors hover:text-fuchsia-600"
             >
               Como Funciona
-            </a>
-            <a
-              href="/app/assinatura"
-              className="text-gray-700 transition-colors hover:text-fuchsia-600"
-            >
-              Planos
-            </a>
-            <a
-              href="#quem-somos"
+            </Link>
+            <Link
+              href="/quem-somos"
               className="text-gray-700 transition-colors hover:text-fuchsia-600"
             >
               Quem Somos
-            </a>
+            </Link>
           </nav>
 
           <div className="hidden items-center space-x-4 md:flex">
@@ -79,30 +73,27 @@ export default function Header() {
       {isMenuOpen && (
         <div className="border-t border-gray-100 bg-white md:hidden">
           <div className="space-y-3 px-4 py-4">
-            <a
-              href="#inicio"
+            <Link
+              href="/babas"
               className="block text-gray-700 transition-colors hover:text-fuchsia-600"
+              onClick={() => setIsMenuOpen(false)}
             >
-              Início
-            </a>
-            <a
-              href="#como-funciona"
+              Para Babás
+            </Link>
+            <Link
+              href="/como-funciona"
               className="block text-gray-700 transition-colors hover:text-fuchsia-600"
+              onClick={() => setIsMenuOpen(false)}
             >
               Como Funciona
-            </a>
-            <a
-              href="/app/assinatura"
+            </Link>
+            <Link
+              href="/quem-somos"
               className="block text-gray-700 transition-colors hover:text-fuchsia-600"
-            >
-              Planos
-            </a>
-            <a
-              href="#quem-somos"
-              className="block text-gray-700 transition-colors hover:text-fuchsia-600"
+              onClick={() => setIsMenuOpen(false)}
             >
               Quem Somos
-            </a>
+            </Link>
             <div className="space-y-2 pt-4">
               <Button variant="outline" className="w-full" asChild>
                 <Link href="/login">Entrar</Link>
