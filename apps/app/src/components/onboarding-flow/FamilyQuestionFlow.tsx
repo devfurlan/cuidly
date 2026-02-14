@@ -43,7 +43,9 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [showInterstitial, setShowInterstitial] = useState(false);
 
   // Keep a ref to the latest formData for synchronous access
@@ -141,7 +143,15 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
 
     // Special validation for address type
     if (question.type === 'address') {
-      const address = value as { zipCode?: string; streetName?: string; neighborhood?: string; city?: string; state?: string } | undefined;
+      const address = value as
+        | {
+            zipCode?: string;
+            streetName?: string;
+            neighborhood?: string;
+            city?: string;
+            state?: string;
+          }
+        | undefined;
       const errors: Record<string, string> = {};
 
       if (!address?.zipCode || address.zipCode.length < 9) {
@@ -173,7 +183,9 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
       if (value === undefined || value === null || value === '') {
         // Mensagem customizada para campo de filhos
         if (question.field === 'children') {
-          setError('Para encontrar a babá ideal, você precisa cadastrar pelo menos 1 filho');
+          setError(
+            'Para encontrar a babá ideal, você precisa cadastrar pelo menos 1 filho',
+          );
         } else {
           setError('Este campo é obrigatório');
         }
@@ -182,7 +194,9 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
       if (Array.isArray(value) && value.length === 0) {
         // Mensagem customizada para campo de filhos
         if (question.field === 'children') {
-          setError('Para encontrar a babá ideal, você precisa cadastrar pelo menos 1 filho');
+          setError(
+            'Para encontrar a babá ideal, você precisa cadastrar pelo menos 1 filho',
+          );
         } else {
           setError('Selecione pelo menos uma opção');
         }
@@ -210,7 +224,7 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
         // Save to API before completing
         saveToApiAndComplete();
       } else if (dest === 'exit') {
-        // Go back to type selection — delete current record so user can re-choose
+        // Go back to type selection - delete current record so user can re-choose
         try {
           await fetch('/api/auth/switch-type', { method: 'POST' });
         } catch {
@@ -269,28 +283,31 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
   };
 
   // Validate CPF uniqueness against API
-  const validateCpfUniqueness = useCallback(async (cpf: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/check-cpf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cpf, userType: 'FAMILY' }),
-      });
+  const validateCpfUniqueness = useCallback(
+    async (cpf: string): Promise<boolean> => {
+      try {
+        const response = await fetch('/api/check-cpf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cpf, userType: 'FAMILY' }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!result.available) {
-        setError(result.error || 'Este CPF já está cadastrado');
+        if (!result.available) {
+          setError(result.error || 'Este CPF já está cadastrado');
+          return false;
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Error validating CPF:', e);
+        setError('Erro ao validar CPF. Tente novamente.');
         return false;
       }
-
-      return true;
-    } catch (e) {
-      console.error('Error validating CPF:', e);
-      setError('Erro ao validar CPF. Tente novamente.');
-      return false;
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Handle next
   const handleNext = useCallback(async () => {
@@ -332,7 +349,13 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
     }
 
     navigateTo(next);
-  }, [validateCurrentQuestion, questionIndex, navigateTo, question, validateCpfUniqueness]);
+  }, [
+    validateCurrentQuestion,
+    questionIndex,
+    navigateTo,
+    question,
+    validateCpfUniqueness,
+  ]);
 
   // Handle back
   const handleBack = useCallback(() => {
@@ -407,10 +430,7 @@ export function FamilyQuestionFlow({ questionIndex }: FamilyQuestionFlowProps) {
         <div className="flex min-h-[70vh] flex-col">
           <div className="flex-1">
             <FlowTransition questionKey={questionKey} direction={direction}>
-              <QuestionCard
-                title={question.title}
-                subtitle={question.subtitle}
-              >
+              <QuestionCard title={question.title} subtitle={question.subtitle}>
                 <QuestionRenderer
                   question={question}
                   value={formData[question.field]}

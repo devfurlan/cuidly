@@ -3,7 +3,9 @@
 ## Regras para o Claude
 
 ### Prisma / Banco de Dados
+
 **NUNCA** executar comandos Prisma que alterem o banco de dados ou o schema:
+
 - ❌ `prisma db push`
 - ❌ `prisma db pull`
 - ❌ `prisma migrate dev`
@@ -13,6 +15,7 @@
 Apenas o usuário executa esses comandos manualmente.
 
 **Permitido:**
+
 - ✅ Editar o arquivo `schema.prisma` manualmente
 - ✅ Executar `prisma generate` (gera apenas o cliente, não altera BD)
 - ✅ Executar `prisma validate` (apenas valida o schema)
@@ -26,10 +29,10 @@ Apenas o usuário executa esses comandos manualmente.
 - A babá pode ver seu próprio nome completo em seu perfil
 
 ```tsx
-import { getFirstName } from '@/utils/slug';
+import { getFirstName } from "@/utils/slug";
 
 // ✅ CORRETO - apenas primeiro nome para família
-const displayName = nannyName ? getFirstName(nannyName) : 'Babá';
+const displayName = nannyName ? getFirstName(nannyName) : "Babá";
 
 // ❌ ERRADO - nome completo exposto
 const displayName = nanny.name;
@@ -45,7 +48,7 @@ const displayName = nanny.name;
 ```tsx
 // ✅ CORRETO - apenas primeiro nome
 const emailTemplate = getWelcomeSubscriptionEmailTemplate({
-  name: customerName.split(' ')[0],
+  name: customerName.split(" ")[0],
   // ...
 });
 
@@ -59,28 +62,32 @@ const emailTemplate = getWelcomeSubscriptionEmailTemplate({
 ### Regras de Idioma
 
 #### Código
+
 - **Código sempre em inglês**: variáveis, funções, classes, comentários técnicos
 - Exemplo: `emailAddress`, `sendEmail()`, `isEmailVerified`
 
 #### Textos para o Usuário Final (Português Brasileiro)
+
 - **Sempre em português brasileiro** com grafia e acentuação corretas
 - **"e-mail"** (com hífen) - NUNCA "email"
 - Usar acentuação correta: à, é, ê, ã, õ, ç, etc.
 
 **Exemplos corretos:**
+
 - ✅ "Seu e-mail foi verificado"
 - ✅ "Digite seu e-mail"
 
 **Exemplos incorretos:**
+
 - ❌ "Seu email foi verificado"
 - ❌ "Acesso a plataforma" (falta crase)
 
-#### Valores de Enum — NUNCA Exibir Crus
+#### Valores de Enum - NUNCA Exibir Crus
 
 **NUNCA** renderizar valores de enum diretamente na UI. **SEMPRE** usar as funções de label getter de `@/helpers/label-getters.ts`.
 
 - O banco de dados pode conter valores legados de versões anteriores das opções
-- A função `getLabel()` faz fallback para `String(value)` se não encontrar match — isso causa exibição de enums crus como `FROM_21_TO_30`
+- A função `getLabel()` faz fallback para `String(value)` se não encontrar match - isso causa exibição de enums crus como `FROM_21_TO_30`
 - Ao adicionar novas opções, **SEMPRE** manter labels para valores antigos via `LEGACY_*_LABELS`
 
 ```tsx
@@ -96,6 +103,7 @@ import { getHourlyRateRangeLabel } from '@/helpers/label-getters';
 ```
 
 **Arquivos de referência:**
+
 - Labels legados: `apps/app/src/constants/options/common-options.ts` → `LEGACY_HOURLY_RATE_LABELS`
 - Label getters: `apps/app/src/helpers/label-getters.ts`
 - Padrão existente: `LEGACY_ACTIVITY_LABELS` em `nanny-options.ts`
@@ -110,12 +118,14 @@ import { getHourlyRateRangeLabel } from '@/helpers/label-getters';
 - Usar construções neutras que funcionem para qualquer pessoa
 
 **Exemplos corretos:**
+
 - ✅ "Boas-vindas à Cuidly!"
 - ✅ "Olá, João!"
 - ✅ "Agradecemos por assinar"
 - ✅ "Você tem acesso a..."
 
 **Exemplos incorretos:**
+
 - ❌ "Bem-vindo ao plano!"
 - ❌ "Obrigado por assinar"
 - ❌ "Seja recomendada para mais vagas"
@@ -133,6 +143,7 @@ import { getHourlyRateRangeLabel } from '@/helpers/label-getters';
 - ❌ `https://cuidly.com.br` (ERRADO - NÃO USAR)
 
 Isso vale para:
+
 - URLs em templates de e-mail
 - Links de redirecionamento
 - Referências ao site
@@ -152,6 +163,7 @@ Este documento define os planos de assinatura, com preços promocionais de lanç
 
 ✅ Ver perfis **incompletos** de babás
 ✅ Pode usar **apenas estes filtros**:
+
 - Cidade
 - Disponibilidade (dias da semana)
 - Tipo de cuidado (folguista / diarista / mensalista)
@@ -163,7 +175,7 @@ Este documento define os planos de assinatura, com preços promocionais de lanç
 ❌ Não conversa
 
 Mensagem implícita:
-*"Existem X babás que atendem o que você precisa. Cadastre-se para ver."*
+_"Existem X babás que atendem o que você precisa. Cadastre-se para ver."_
 
 ### 🔹 Cuidly Free (Gratuito)
 
@@ -186,16 +198,17 @@ Mensagem implícita:
 ❌ Matching inteligente
 
 Aqui a família **quase resolve**, mas:
+
 - só pode conversar com 1 babá
 - não vê histórico completo
-→ ponto natural de upgrade
+  → ponto natural de upgrade
 
 ### 🔹 Cuidly Plus (Pago)
 
 **Objetivo:** decisão + fechamento
 
-**Mensal:** R$ 47 (Promo Lançamento) - *normal: R$ 59*
-**Trimestral:** R$ 94 (Promo Lançamento) - *normal: R$ 119*
+**Mensal:** R$ 47 (Promo Lançamento) - _normal: R$ 59_
+**Trimestral:** R$ 94 (Promo Lançamento) - _normal: R$ 119_
 
 ✅ **Tudo do Básico**
 ✅ **Matching inteligente**
@@ -214,6 +227,7 @@ Aqui a família **quase resolve**, mas:
 
 ✅ Ver **prévia** de vagas disponíveis
 ✅ Usar **filtros básicos** de vagas:
+
 - Cidade
 - Tipo de vaga (folguista / diarista / mensalista)
 - Dias da semana
@@ -273,29 +287,32 @@ Aqui a família **quase resolve**, mas:
 
 ## Selos e Verificações de Babás
 
-| Selo | Requisitos | Plano |
-|------|-----------|-------|
+| Selo             | Requisitos                                                                                 | Plano  |
+| ---------------- | ------------------------------------------------------------------------------------------ | ------ |
 | **Identificada** | Perfil completo + documento de identidade (RG/CNH via Documentoscopia) + e-mail verificado | Grátis |
-| **Verificada** | Identificada + validação facial + verificação de segurança | Pro |
-| **Confiável** | Verificada + 3 avaliações | Pro |
+| **Verificada**   | Identificada + validação facial + verificação de segurança                                 | Pro    |
+| **Confiável**    | Verificada + 3 avaliações                                                                  | Pro    |
 
 ### Definição de "Perfil Completo" para Selo Identificada
 
 O perfil completo exige TODOS os seguintes campos preenchidos:
 
 **Informações:**
+
 - Nome, CPF, Data de nascimento, Gênero
 - Foto de perfil
 - Localização (bairro, cidade, estado)
 - Sobre mim (texto de apresentação)
 
 **Experiência:**
+
 - Anos de experiência
 - Faixas etárias de experiência
 - Pontos fortes
 - Atividades que aceita fazer
 
 **Trabalho:**
+
 - Tipo de babá (eventual, fixo, etc)
 - Regime de contratação (CLT, MEI, etc)
 - Faixa de valor por hora
@@ -303,6 +320,7 @@ O perfil completo exige TODOS os seguintes campos preenchidos:
 - Raio de deslocamento
 
 **Disponibilidade:**
+
 - Grade de disponibilidade semanal
 
 **Nota:** A validação de documento (RG/CNH) via BigDataCorp Documentoscopia é gratuita e parte do Selo Identificada.
@@ -322,34 +340,37 @@ Os planos estão configurados nos seguintes arquivos:
 
 ## Comparativo com Concorrentes (Brasil)
 
-| Dimensão | Cuidly | Sitly (BR) | Babysits (BR) |
-|----------|--------|------------|---------------|
-| Modelo | Vaga-first + matching | Perfil-first | Perfil-first |
-| Criação de vaga | Sim (central) | Não | Não |
-| Matching automático | Sim | Não | Não |
-| Validação de identidade | Sim | Não | Não |
-| Antecedentes criminais | Sim | Não | Não |
-| Selos estruturados | Identificada / Verificada / Confiável | Não estruturado | Não estruturado |
+| Dimensão                | Cuidly                                | Sitly (BR)      | Babysits (BR)   |
+| ----------------------- | ------------------------------------- | --------------- | --------------- |
+| Modelo                  | Vaga-first + matching                 | Perfil-first    | Perfil-first    |
+| Criação de vaga         | Sim (central)                         | Não             | Não             |
+| Matching automático     | Sim                                   | Não             | Não             |
+| Validação de identidade | Sim                                   | Não             | Não             |
+| Antecedentes criminais  | Sim                                   | Não             | Não             |
+| Selos estruturados      | Identificada / Verificada / Confiável | Não estruturado | Não estruturado |
 
 ### Preços - Famílias (Brasil)
-| Plataforma | Plano grátis | Mensal (normal) | Trimestral |
-|------------|--------------|-----------------|------------|
-| **Cuidly** | Sim | R$ 59/mês | R$ 119/trimestre |
-| Sitly | Sim | R$ 49/mês | R$ 99/trimestre |
-| Babysits | Sim | ~R$ 39-59/mês | Varia |
+
+| Plataforma | Plano grátis | Mensal (normal) | Trimestral       |
+| ---------- | ------------ | --------------- | ---------------- |
+| **Cuidly** | Sim          | R$ 59/mês       | R$ 119/trimestre |
+| Sitly      | Sim          | R$ 49/mês       | R$ 99/trimestre  |
+| Babysits   | Sim          | ~R$ 39-59/mês   | Varia            |
 
 ### Preços - Babás (Brasil)
-| Plataforma | Plano grátis | Mensal | Anual |
-|------------|--------------|--------|-------|
-| **Cuidly** | Sim | R$ 19/mês | R$ 119/ano |
-| Sitly | Muito limitado | R$ 29/mês | R$ 57/trimestre |
-| Babysits | Sim | Não cobra babás | - |
+
+| Plataforma | Plano grátis   | Mensal          | Anual           |
+| ---------- | -------------- | --------------- | --------------- |
+| **Cuidly** | Sim            | R$ 19/mês       | R$ 119/ano      |
+| Sitly      | Muito limitado | R$ 29/mês       | R$ 57/trimestre |
+| Babysits   | Sim            | Não cobra babás | -               |
 
 ---
 
 ## Diferenciais Reais da Cuidly
 
 **O que diferencia (não commodity):**
+
 - Criação de vaga estruturada
 - Matching automático orientado a vaga
 - Validações (identidade + antecedentes)
@@ -357,6 +378,7 @@ Os planos estão configurados nos seguintes arquivos:
 - Modelo claro de confiança (selos)
 
 **O que não diferencia (todo mundo tem):**
+
 - Filtros avançados
 - Notificações
 - Avaliações
@@ -370,13 +392,13 @@ Os planos estão configurados nos seguintes arquivos:
 
 Antes de criar código inline para elementos visuais, **SEMPRE** verifique se já existe um componente:
 
-| Elemento | Componente | Arquivo |
-|----------|-----------|---------|
-| Selo da Babá | `<SealBadge seal={seal} />` | `@/components/seals/SealBadge.tsx` |
-| Badge genérico | `<Badge variant="..." />` | `@/components/ui/shadcn/badge.tsx` |
-| Card | `<Card />` | `@/components/ui/shadcn/card.tsx` |
-| Skeleton | `<Skeleton />` | `@/components/ui/shadcn/skeleton.tsx` |
-| Modal de Upgrade (Babá) | `<NannyProUpsellModal />` | `@/components/subscription/nanny-pro-upsell-modal.tsx` |
+| Elemento                | Componente                  | Arquivo                                                |
+| ----------------------- | --------------------------- | ------------------------------------------------------ |
+| Selo da Babá            | `<SealBadge seal={seal} />` | `@/components/seals/SealBadge.tsx`                     |
+| Badge genérico          | `<Badge variant="..." />`   | `@/components/ui/shadcn/badge.tsx`                     |
+| Card                    | `<Card />`                  | `@/components/ui/shadcn/card.tsx`                      |
+| Skeleton                | `<Skeleton />`              | `@/components/ui/shadcn/skeleton.tsx`                  |
+| Modal de Upgrade (Babá) | `<NannyProUpsellModal />`   | `@/components/subscription/nanny-pro-upsell-modal.tsx` |
 
 ### Upgrade de Assinatura
 
@@ -403,6 +425,7 @@ const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 ```
 
 **Features disponíveis:**
+
 - `validation`: Para validação de documentos/antecedentes
 - `messages`: Para mensagens ilimitadas
 - `highlight`: Para perfil em destaque
@@ -412,11 +435,11 @@ const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
 **Arquivo de configuração:** `apps/app/src/lib/seals.ts`
 
-| Selo | Cor | Ícone |
-|------|-----|-------|
-| IDENTIFICADA | `bg-blue-500` | `PiStar` |
-| VERIFICADA | `bg-green-500` | `PiShieldCheck` |
-| CONFIAVEL | `bg-amber-500` | `PiMedal` |
+| Selo         | Cor            | Ícone           |
+| ------------ | -------------- | --------------- |
+| IDENTIFICADA | `bg-blue-500`  | `PiStar`        |
+| VERIFICADA   | `bg-green-500` | `PiShieldCheck` |
+| CONFIAVEL    | `bg-amber-500` | `PiMedal`       |
 
 **NUNCA** criar cores inline para selos. Use `<SealBadge seal={seal} />`.
 
@@ -457,7 +480,8 @@ Para exibir verificações/tags em listas, usar o padrão de pills:
 O componente de disponibilidade usa grid com 7 colunas (dias) + 1 coluna de labels:
 
 ```tsx
-className="grid grid-cols-[40px_repeat(7,1fr)] gap-0.5 sm:grid-cols-[60px_repeat(7,1fr)] sm:gap-1"
+className =
+  "grid grid-cols-[40px_repeat(7,1fr)] gap-0.5 sm:grid-cols-[60px_repeat(7,1fr)] sm:gap-1";
 ```
 
 Células selecionadas: `border-fuchsia-500 bg-fuchsia-500 text-white`
@@ -469,15 +493,20 @@ Células não selecionadas: `border-gray-200 bg-gray-50 text-gray-300`
 
 ```tsx
 // ❌ ERRADO - renderiza "0" quando count é 0
-{count && <span>{count} items</span>}
+{
+  count && <span>{count} items</span>;
+}
 
 // ✅ CORRETO - usa comparação explícita
-{(count ?? 0) > 0 && <span>{count} items</span>}
+{
+  (count ?? 0) > 0 && <span>{count} items</span>;
+}
 ```
 
 ### Indicação de Campos Obrigatórios/Opcionais em Formulários
 
 O padrão do projeto é:
+
 - **Campos obrigatórios:** SEM indicador visual (é o padrão assumido)
 - **Campos opcionais:** Usar a prop `optional={true}` no `FormLabel`, que adiciona "(opcional)" ao lado do label
 
@@ -526,13 +555,13 @@ Se um componente já tem uma prop para controlar algo (tamanho, variante, cor, e
 
 ### Exemplos de Props Comuns
 
-| Componente | Props Disponíveis |
-|------------|-------------------|
+| Componente      | Props Disponíveis                    |
+| --------------- | ------------------------------------ |
 | `DialogContent` | `size="sm" \| "lg" \| "xl" \| "2xl"` |
-| `Button` | `variant`, `size` |
-| `Badge` | `variant`, `size` |
-| `Input` | `size` |
-| `Card` | `variant` |
+| `Button`        | `variant`, `size`                    |
+| `Badge`         | `variant`, `size`                    |
+| `Input`         | `size`                               |
+| `Card`          | `variant`                            |
 
 ---
 
@@ -542,17 +571,17 @@ O projeto usa **Tailwind CSS 4.1.17**. Algumas classes mudaram de nome em relaç
 
 ### Classes Renomeadas (SEMPRE usar a versão Tailwind 4)
 
-| ❌ Tailwind 3 (não usar) | ✅ Tailwind 4 (usar) |
-|--------------------------|----------------------|
-| `break-words` | `wrap-break-word` |
-| `flex-shrink-0` | `shrink-0` |
-| `flex-shrink` | `shrink` |
-| `flex-grow-0` | `grow-0` |
-| `flex-grow` | `grow` |
-| `overflow-ellipsis` | `text-overflow-ellipsis` |
-| `overflow-clip` | `text-overflow-clip` |
-| `decoration-slice` | `box-decoration-slice` |
-| `decoration-clone` | `box-decoration-clone` |
+| ❌ Tailwind 3 (não usar) | ✅ Tailwind 4 (usar)     |
+| ------------------------ | ------------------------ |
+| `break-words`            | `wrap-break-word`        |
+| `flex-shrink-0`          | `shrink-0`               |
+| `flex-shrink`            | `shrink`                 |
+| `flex-grow-0`            | `grow-0`                 |
+| `flex-grow`              | `grow`                   |
+| `overflow-ellipsis`      | `text-overflow-ellipsis` |
+| `overflow-clip`          | `text-overflow-clip`     |
+| `decoration-slice`       | `box-decoration-slice`   |
+| `decoration-clone`       | `box-decoration-clone`   |
 
 ### Exemplos
 

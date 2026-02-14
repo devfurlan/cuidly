@@ -14,7 +14,7 @@ export default function CookiesPolicyPage() {
         <h1 className="text-4xl font-bold text-gray-900">
           Política de Cookies
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm">
+        <p className="mt-2 text-sm text-muted-foreground">
           Atualizado em 26/01/2026
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function CookiesPolicyPage() {
           </p>
           <p className="mt-4">
             Se recusar cookies de analytics, o site continuará funcionando
-            normalmente — apenas deixaremos de coletar dados sobre seu uso.
+            normalmente - apenas deixaremos de coletar dados sobre seu uso.
           </p>
         </section>
 

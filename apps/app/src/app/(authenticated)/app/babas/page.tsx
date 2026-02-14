@@ -1,9 +1,26 @@
 'use client';
 
-import { PiBriefcase, PiCaretRight, PiCertificate, PiCheckCircle, PiCrown, PiFirstAidKit, PiHeart, PiLightning, PiMapPin, PiSlidersHorizontal, PiSparkle, PiStar, PiStarFill, PiUser, PiX } from 'react-icons/pi';
+import {
+  PiBriefcase,
+  PiCaretRight,
+  PiCertificate,
+  PiCheckCircle,
+  PiCrown,
+  PiFirstAidKit,
+  PiHeart,
+  PiLightning,
+  PiMapPin,
+  PiSlidersHorizontal,
+  PiSparkle,
+  PiStar,
+  PiStarFill,
+  PiUser,
+  PiX,
+} from 'react-icons/pi';
 
 export const dynamic = 'force-dynamic';
 
+import { PremiumUpsellModal } from '@/components/PremiumUpsellModal';
 import {
   Avatar,
   AvatarFallback,
@@ -22,12 +39,11 @@ import {
   SelectValue,
 } from '@/components/ui/shadcn/select';
 import { Skeleton } from '@/components/ui/shadcn/skeleton';
+import { getExperienceYearsLabel } from '@/helpers/label-getters';
+import { getNannyProfileUrl } from '@/utils/slug';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { getNannyProfileUrl } from '@/utils/slug';
-import { getExperienceYearsLabel } from '@/helpers/label-getters';
-import { PremiumUpsellModal } from '@/components/PremiumUpsellModal';
 
 interface NannyListing {
   id: number;
@@ -146,7 +162,9 @@ function NanniesListContent() {
   const [hasActiveJob, setHasActiveJob] = useState(false);
   const [hasMatchingFeature, setHasMatchingFeature] = useState(false);
   const [showUpsellModal, setShowUpsellModal] = useState(false);
-  const [activeJobs, setActiveJobs] = useState<{ id: number; title: string }[]>([]);
+  const [activeJobs, setActiveJobs] = useState<{ id: number; title: string }[]>(
+    [],
+  );
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     locations: [],
@@ -186,7 +204,7 @@ function NanniesListContent() {
           }
         }
       } catch {
-        // Not a family or not authenticated — ignore
+        // Not a family or not authenticated - ignore
       }
     }
     loadActiveJobs();
@@ -349,7 +367,8 @@ function NanniesListContent() {
               Desbloqueie a ordenação por compatibilidade
             </p>
             <p className="text-xs text-fuchsia-600">
-              Com o Plus, veja quais babás têm maior compatibilidade com sua vaga
+              Com o Plus, veja quais babás têm maior compatibilidade com sua
+              vaga
             </p>
           </div>
           <Button
@@ -608,9 +627,7 @@ function NanniesListContent() {
                     </Avatar>
                     {nanny.hasPremium && (
                       <div className="absolute -top-1 -right-1 rounded-full bg-yellow-400 p-1">
-                        <PiCrown
-                          className="size-3 text-white"
-                        />
+                        <PiCrown className="size-3 text-white" />
                       </div>
                     )}
                   </div>
@@ -621,9 +638,7 @@ function NanniesListContent() {
                         {nanny.name}
                       </h3>
                       {nanny.isVerified && (
-                        <PiCheckCircle
-                          className="size-5 shrink-0 text-blue-500"
-                        />
+                        <PiCheckCircle className="size-5 shrink-0 text-blue-500" />
                       )}
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
@@ -637,7 +652,9 @@ function NanniesListContent() {
                     {nanny.experienceYears !== null && (
                       <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
                         <PiBriefcase className="size-4" />
-                        <span>{getExperienceYearsLabel(nanny.experienceYears)}</span>
+                        <span>
+                          {getExperienceYearsLabel(nanny.experienceYears)}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -712,11 +729,7 @@ function NanniesListContent() {
                 {nanny.certifications.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-1.5">
                     {nanny.certifications.slice(0, 3).map((cert) => (
-                      <Badge
-                        key={cert}
-                        variant="success-outline"
-                        size="sm"
-                      >
+                      <Badge key={cert} variant="success-outline" size="sm">
                         <PiCertificate className="size-3" />
                         {CERTIFICATION_LABELS[cert] || cert}
                       </Badge>
@@ -777,7 +790,11 @@ function NanniesListContent() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => router.push(getNannyProfileUrl(nanny.slug, nanny.location.city))}
+                    onClick={() =>
+                      router.push(
+                        getNannyProfileUrl(nanny.slug, nanny.location.city),
+                      )
+                    }
                     className="text-fuchsia-600 hover:text-fuchsia-700"
                   >
                     Ver perfil

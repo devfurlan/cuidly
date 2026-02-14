@@ -1,31 +1,43 @@
-import { test, expect } from '@playwright/test';
-import { loginAsFamilyPaid, loginAsNannyPro } from '../helpers/auth';
+import { expect, test } from "@playwright/test";
+import { loginAsFamilyPaid, loginAsNannyPro } from "../helpers/auth";
 
-test.describe('Chat: Conversations', () => {
-  test('family should see conversations page', async ({ context, page }) => {
+test.describe("Chat: Conversations", () => {
+  test("family should see conversations page", async ({ context, page }) => {
     await loginAsFamilyPaid(context, page);
-    await page.goto('/app/mensagens');
+    await page.goto("/app/mensagens");
 
     // Should see "Mensagens" heading
-    await expect(page.getByText('Mensagens').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Mensagens").first()).toBeVisible({
+      timeout: 15000,
+    });
   });
 
-  test('family should see conversation with nanny in sidebar', async ({ context, page }) => {
+  test("family should see conversation with nanny in sidebar", async ({
+    context,
+    page,
+  }) => {
     await loginAsFamilyPaid(context, page);
-    await page.goto('/app/mensagens');
+    await page.goto("/app/mensagens");
 
     // Screenshot shows "Maria" in the sidebar with message preview
-    await expect(page.getByText('Maria').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Maria").first()).toBeVisible({
+      timeout: 15000,
+    });
   });
 
-  test('family should see messages when clicking a conversation', async ({ context, page }) => {
+  test("family should see messages when clicking a conversation", async ({
+    context,
+    page,
+  }) => {
     await loginAsFamilyPaid(context, page);
-    await page.goto('/app/mensagens');
+    await page.goto("/app/mensagens");
 
     // Wait for conversation list to load
-    await expect(page.getByText('Maria').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Maria").first()).toBeVisible({
+      timeout: 15000,
+    });
 
-    // Click the conversation item — click the parent container that is a link
+    // Click the conversation item - click the parent container that is a link
     const conversationLink = page.locator('a[href*="/app/mensagens/"]').first();
     await expect(conversationLink).toBeVisible({ timeout: 5000 });
     await conversationLink.click();
@@ -39,21 +51,26 @@ test.describe('Chat: Conversations', () => {
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test('nanny should see conversations page', async ({ context, page }) => {
+  test("nanny should see conversations page", async ({ context, page }) => {
     await loginAsNannyPro(context, page);
-    await page.goto('/app/mensagens');
+    await page.goto("/app/mensagens");
 
     // Should see "Mensagens" heading
-    await expect(page.getByText('Mensagens').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Mensagens").first()).toBeVisible({
+      timeout: 15000,
+    });
   });
 
-  test('nanny should see conversation with family in sidebar', async ({ context, page }) => {
+  test("nanny should see conversation with family in sidebar", async ({
+    context,
+    page,
+  }) => {
     await loginAsNannyPro(context, page);
-    await page.goto('/app/mensagens');
+    await page.goto("/app/mensagens");
 
     // From nanny side, family name shows as first name only: "Família"
-    await expect(
-      page.getByText(/família/i).first(),
-    ).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/família/i).first()).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

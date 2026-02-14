@@ -8,8 +8,8 @@
  * base64url-encoded JSON containing the full session response.
  */
 
-import { type Page, type BrowserContext } from '@playwright/test';
-import { TEST_USERS, type TestUserKey } from '../../seed/test-seed';
+import { type BrowserContext, type Page } from "@playwright/test";
+import { TEST_USERS, type TestUserKey } from "../../seed/test-seed";
 
 function getEnvOrThrow(name: string): string {
   const val = process.env[name];
@@ -26,10 +26,10 @@ function extractProjectRef(supabaseUrl: string): string {
 
 function toBase64Url(str: string): string {
   return Buffer.from(str)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 export async function login(
@@ -38,9 +38,10 @@ export async function login(
   userKey: TestUserKey,
 ) {
   const user = TEST_USERS[userKey];
-  const supabaseUrl = getEnvOrThrow('NEXT_PUBLIC_SUPABASE_URL');
-  const supabaseAnonKey = getEnvOrThrow('NEXT_PUBLIC_SUPABASE_ANON_KEY');
-  const projectRef = process.env.SUPABASE_PROJECT_REF || extractProjectRef(supabaseUrl);
+  const supabaseUrl = getEnvOrThrow("NEXT_PUBLIC_SUPABASE_URL");
+  const supabaseAnonKey = getEnvOrThrow("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const projectRef =
+    process.env.SUPABASE_PROJECT_REF || extractProjectRef(supabaseUrl);
 
   // 1. Authenticate via Supabase Auth REST API (with retry for rate limits)
   let session: Record<string, unknown>;
@@ -49,10 +50,10 @@ export async function login(
     const response = await fetch(
       `${supabaseUrl}/auth/v1/token?grant_type=password`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           apikey: supabaseAnonKey,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: user.email,
@@ -67,14 +68,16 @@ export async function login(
     }
 
     if (response.status === 429 && attempt < MAX_RETRIES - 1) {
-      // Rate limited — wait with exponential backoff before retrying
+      // Rate limited - wait with exponential backoff before retrying
       const delay = 3000 * Math.pow(2, attempt); // 3s, 6s, 12s, 24s
       await new Promise((r) => setTimeout(r, delay));
       continue;
     }
 
     const body = await response.text();
-    throw new Error(`Supabase auth failed for ${userKey}: ${response.status} ${body}`);
+    throw new Error(
+      `Supabase auth failed for ${userKey}: ${response.status} ${body}`,
+    );
   }
 
   // 2. Encode the session in the format @supabase/ssr v0.6.1 expects.
@@ -82,14 +85,14 @@ export async function login(
   // The SDK stores session data as JSON in a cookie. The cookie value format is:
   //   "base64-" + base64url(JSON string of session)
   //
-  // The session JSON is what Supabase GoTrue stores internally — it's the raw
+  // The session JSON is what Supabase GoTrue stores internally - it's the raw
   // token response from /auth/v1/token.
   //
   // If the encoded value exceeds 3180 chars, it gets chunked into
   // sb-<ref>-auth-token.0, .1, etc. We handle that here too.
   const cookieName = `sb-${projectRef}-auth-token`;
   const sessionJson = JSON.stringify(session);
-  const encoded = 'base64-' + toBase64Url(sessionJson);
+  const encoded = "base64-" + toBase64Url(sessionJson);
 
   // 3. Chunk if needed (Supabase SSR MAX_CHUNK_SIZE = 3180 for URI-encoded value)
   const MAX_CHUNK_SIZE = 3180;
@@ -119,29 +122,29 @@ export async function login(
     cookies.map(({ name, value }) => ({
       name,
       value,
-      domain: 'localhost',
-      path: '/',
-      sameSite: 'Lax' as const,
+      domain: "localhost",
+      path: "/",
+      sameSite: "Lax" as const,
     })),
   );
 
-  // 5. Visit app — the middleware reads the cookie and establishes the session
-  await page.goto('/app');
+  // 5. Visit app - the middleware reads the cookie and establishes the session
+  await page.goto("/app");
   await page.waitForURL(/\/app/);
 }
 
 export async function loginAsFamily(context: BrowserContext, page: Page) {
-  return login(context, page, 'family');
+  return login(context, page, "family");
 }
 
 export async function loginAsFamilyPaid(context: BrowserContext, page: Page) {
-  return login(context, page, 'familyPaid');
+  return login(context, page, "familyPaid");
 }
 
 export async function loginAsNanny(context: BrowserContext, page: Page) {
-  return login(context, page, 'nanny');
+  return login(context, page, "nanny");
 }
 
 export async function loginAsNannyPro(context: BrowserContext, page: Page) {
-  return login(context, page, 'nannyPro');
+  return login(context, page, "nannyPro");
 }

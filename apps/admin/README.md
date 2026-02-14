@@ -35,7 +35,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-# 📦 Projeto Cuidly — Backend
+# 📦 Projeto Cuidly - Backend
 
 Este projeto utiliza **Prisma ORM** com **PostgreSQL (Supabase)** e aplica políticas de segurança com **Row Level Security (RLS)**.
 

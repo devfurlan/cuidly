@@ -1,167 +1,205 @@
-import { PiChatCircle, PiFileText, PiMagnifyingGlass, PiShieldCheck, PiStar, PiUserPlus } from 'react-icons/pi';
-import { Card } from '@/components/ui/shadcn/card';
 import { Button } from '@/components/ui/shadcn/button';
 import Link from 'next/link';
-import { PLAN_PRICES, formatPrice } from '@cuidly/core/subscriptions';
+import {
+  PiArrowRight,
+  PiChatCircleDuotone,
+  PiFileTextDuotone,
+  PiMagnifyingGlassDuotone,
+  PiShieldCheckDuotone,
+  PiStarDuotone,
+  PiUserPlusDuotone,
+} from 'react-icons/pi';
+
+const familySteps = [
+  {
+    icon: PiUserPlusDuotone,
+    title: '1. Cadastre-se Grátis',
+    description:
+      'Crie sua conta e cadastre o perfil dos seus filhos (idade, necessidades, temperamento)',
+  },
+  {
+    icon: PiMagnifyingGlassDuotone,
+    title: '2. Explore ou Crie Vagas',
+    description:
+      'Busque babás compatíveis ou publique uma vaga para receber candidaturas',
+  },
+  {
+    icon: PiChatCircleDuotone,
+    title: '3. Entre em Contato',
+    description:
+      'Encontrou uma babá ideal? Inicie uma conversa pelo chat e conheça melhor antes de decidir',
+  },
+  {
+    icon: PiShieldCheckDuotone,
+    title: '4. Confira os Selos',
+    description:
+      'Cada babá pode ter selos como Identificada, Verificada ou Confiável - confira o nível de validação de cada uma',
+  },
+  {
+    icon: PiFileTextDuotone,
+    title: '5. Priorize Babás Validadas',
+    description:
+      'Babás com Selo Verificada passaram por validação facial e verificação de segurança completa',
+  },
+  {
+    icon: PiStarDuotone,
+    title: '6. Contrate com Confiança',
+    description:
+      'Converse pelo chat, tire suas dúvidas e contrate a babá ideal para sua família',
+  },
+];
+
+const nannySteps = [
+  {
+    icon: PiUserPlusDuotone,
+    title: '1. Cadastre-se Grátis',
+    description:
+      'Crie seu perfil completo com experiência, certificados e disponibilidade',
+  },
+  {
+    icon: PiShieldCheckDuotone,
+    title: '2. Seja Verificada (Grátis)',
+    description: 'Receba o Selo de Verificação após validação de antecedentes',
+  },
+  {
+    icon: PiMagnifyingGlassDuotone,
+    title: '3. Veja Vagas',
+    description:
+      'Acesse vagas publicadas por famílias e candidate-se às que mais combinam com você',
+  },
+  {
+    icon: PiChatCircleDuotone,
+    title: '4. Receba Contatos',
+    description:
+      'Famílias interessadas entrarão em contato diretamente com você',
+  },
+  {
+    icon: PiStarDuotone,
+    title: '5. Destaque-se (Opcional)',
+    description:
+      'Quer mais visibilidade? Apareça primeiro nas buscas e se destaque da concorrência',
+  },
+  {
+    icon: PiFileTextDuotone,
+    title: '6. Seja Contratada',
+    description:
+      'Converse pelo chat, alinhe expectativas e comece a trabalhar com famílias de qualidade',
+  },
+];
 
 export default function ComoFuncionaPage() {
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold text-center mb-4">Como Funciona</h1>
-        <p className="text-xl text-gray-600 text-center mb-16 max-w-3xl mx-auto">
-          Conectar famílias a babás qualificadas nunca foi tão fácil e seguro
-        </p>
-
-        {/* Para Famílias */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-center mb-12">Para Famílias</h2>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiUserPlus className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">1. Cadastre-se Grátis</h3>
-              <p className="text-gray-600">
-                Crie sua conta e cadastre o perfil dos seus filhos (idade, necessidades, temperamento)
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiMagnifyingGlass className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">2. Explore ou Crie Vagas</h3>
-              <p className="text-gray-600">
-                Busque babás compatíveis ou publique uma vaga para receber candidaturas
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiChatCircle className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">3. Entre em Contato</h3>
-              <p className="text-gray-600">
-                Assine o Cuidly Plus (a partir de {formatPrice(PLAN_PRICES.FAMILY_PLUS.MONTH.price)}/mês) e converse com babás ilimitadamente
-              </p>
-            </Card>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiShieldCheck className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">4. Verifique Credenciais</h3>
-              <p className="text-gray-600">
-                Todas as babás têm Selo de Verificação com validação de antecedentes
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiFileText className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">5. Veja Babás Validadas</h3>
-              <p className="text-gray-600">
-                Babás com Selo Verificada têm validação completa (facial + antecedentes criminais)
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiStar className="w-8 h-8 text-pink" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">6. Contrate com Confiança</h3>
-              <p className="text-gray-600">
-                Faça entrevistas e contrate a babá ideal para sua família
-              </p>
-            </Card>
+    <>
+      {/* Hero */}
+      <section className="bg-linear-to-br from-fuchsia-50 to-blue-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="font-mono text-4xl font-bold text-blue-600 sm:text-5xl">
+              Como Funciona
+            </h1>
+            <p className="mt-6 text-lg/8 text-gray-600">
+              Conectar famílias a babás qualificadas nunca foi tão fácil e
+              seguro
+            </p>
           </div>
         </div>
+      </section>
 
-        {/* Para Babás */}
-        <div className="bg-gray-50 -mx-4 px-4 py-16 md:mx-0 md:rounded-lg">
-          <h2 className="text-3xl font-bold text-center mb-12">Para Babás</h2>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiUserPlus className="w-8 h-8 text-blue-600" />
+      {/* Para Famílias */}
+      <section className="py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-mono text-3xl font-bold text-fuchsia-600 sm:text-4xl">
+              Para Famílias
+            </h2>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-2xl gap-x-8 gap-y-16 sm:mt-20 lg:mt-24 lg:max-w-none lg:grid-cols-3">
+            {familySteps.map((step) => (
+              <div key={step.title}>
+                <div className="flex size-12 items-center justify-center rounded-lg bg-linear-to-br from-fuchsia-400 to-fuchsia-500">
+                  <step.icon className="size-6 text-white" />
+                </div>
+                <h3 className="mt-4 text-base/7 font-semibold text-gray-900">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-base/7 text-gray-600">
+                  {step.description}
+                </p>
               </div>
-              <h3 className="text-xl font-bold mb-2">1. Cadastre-se Grátis</h3>
-              <p className="text-gray-600">
-                Crie seu perfil completo com experiência, certificados e disponibilidade
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiShieldCheck className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">2. Seja Verificada (Grátis)</h3>
-              <p className="text-gray-600">
-                Receba o Selo de Verificação após validação de antecedentes
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiMagnifyingGlass className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">3. Veja Vagas</h3>
-              <p className="text-gray-600">
-                Acesse vagas publicadas por famílias e candidate-se às que mais combinam com você
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiChatCircle className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">4. Receba Contatos</h3>
-              <p className="text-gray-600">
-                Famílias interessadas entrarão em contato diretamente com você
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiStar className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">5. Destaque-se (Opcional)</h3>
-              <p className="text-gray-600">
-                Assine o Cuidly Pro ({formatPrice(PLAN_PRICES.NANNY_PRO.MONTH.price)}/mês) para aparecer primeiro
-              </p>
-            </Card>
-
-            <Card className="p-6 text-center">
-              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <PiFileText className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">6. Seja Contratada</h3>
-              <p className="text-gray-600">
-                Faça entrevistas e comece a trabalhar com famílias de qualidade
-              </p>
-            </Card>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* CTA */}
-        <div className="text-center mt-16">
-          <h2 className="text-3xl font-bold mb-6">Pronto para começar?</h2>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/cadastro">
-              <Button size="lg">Sou Família</Button>
-            </Link>
-            <Link href="/cadastro">
-              <Button size="lg" variant="outline">Sou Babá</Button>
-            </Link>
+      {/* Para Babás */}
+      <section className="bg-blue-50 py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="font-mono text-3xl font-bold text-blue-600 sm:text-4xl">
+              Para Babás
+            </h2>
+          </div>
+          <div className="mx-auto mt-16 grid max-w-2xl gap-x-8 gap-y-16 sm:mt-20 lg:mt-24 lg:max-w-none lg:grid-cols-3">
+            {nannySteps.map((step) => (
+              <div key={step.title}>
+                <div className="flex size-12 items-center justify-center rounded-lg bg-linear-to-br from-blue-400 to-blue-500">
+                  <step.icon className="size-6 text-white" />
+                </div>
+                <h3 className="mt-4 text-base/7 font-semibold text-gray-900">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-base/7 text-gray-600">
+                  {step.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-32 lg:px-8">
+          <div className="relative isolate overflow-hidden bg-linear-to-br from-fuchsia-500 via-fuchsia-600 to-blue-500 px-6 py-24 text-center shadow-2xl sm:rounded-3xl sm:px-16">
+            <h2 className="text-4xl font-semibold tracking-tight text-balance text-white sm:text-5xl">
+              Pronto para começar?
+            </h2>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+              <Button size="xl" variant="secondary" asChild>
+                <Link href="/cadastro">
+                  Sou Família
+                  <PiArrowRight />
+                </Link>
+              </Button>
+              <Button size="xl" variant="outline-light" asChild>
+                <Link href="/cadastro">
+                  Sou Babá
+                  <PiArrowRight />
+                </Link>
+              </Button>
+            </div>
+            <svg
+              viewBox="0 0 1024 1024"
+              aria-hidden="true"
+              className="absolute top-1/2 left-1/2 -z-10 size-256 -translate-x-1/2 mask-[radial-gradient(closest-side,white,transparent)]"
+            >
+              <circle
+                r={512}
+                cx={512}
+                cy={512}
+                fill="url(#como-funciona-gradient)"
+                fillOpacity="0.7"
+              />
+              <defs>
+                <radialGradient id="como-funciona-gradient">
+                  <stop stopColor="#E935C1" />
+                  <stop offset={1} stopColor="#7775D6" />
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

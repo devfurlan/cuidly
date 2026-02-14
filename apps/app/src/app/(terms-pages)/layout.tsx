@@ -1,7 +1,6 @@
 import { CookieConsentBanner } from '@/components/cookie-consent/CookieConsentBanner';
 import { GTMPageContext } from '@/components/GTMPageContext';
-import Header from '../(lp)/_components/layout/Header';
-import Footer from '../(public-pages)/_components/Footer';
+import TermsShell from './_components/TermsShell';
 
 export default function TermsLayout({
   children,
@@ -9,14 +8,12 @@ export default function TermsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <>
       <GTMPageContext pageType="terms" showCookieConsent={true} />
-      <Header />
-      <main className="flex-1">
-        <div className="mx-auto max-w-4xl px-4 py-12">{children}</div>
-      </main>
-      <Footer />
+      <TermsShell>
+        <div className="mx-auto max-w-4xl px-6 py-12 lg:px-8">{children}</div>
+      </TermsShell>
       <CookieConsentBanner />
-    </div>
+    </>
   );
 }

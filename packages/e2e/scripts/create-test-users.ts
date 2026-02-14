@@ -7,15 +7,15 @@
  * plus additional data needed for E2E tests (addresses, children,
  * nanny profiles, jobs, conversations).
  *
- * Idempotent — skips records that already exist.
+ * Idempotent - skips records that already exist.
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
-import { TEST_USERS } from '../seed/test-seed';
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@prisma/client";
+import { createClient } from "@supabase/supabase-js";
+import { TEST_USERS } from "../seed/test-seed";
 
-const TEST_PROJECT_REF = 'wvhlgotaloagdfsxpqal';
+const TEST_PROJECT_REF = "wvhlgotaloagdfsxpqal";
 
 async function main() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -24,7 +24,7 @@ async function main() {
 
   if (!supabaseUrl || !serviceRoleKey || !dbUrl) {
     console.error(
-      '❌ Missing required env vars: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL',
+      "❌ Missing required env vars: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL",
     );
     process.exit(1);
   }
@@ -32,12 +32,12 @@ async function main() {
   // Safety check
   const isTestDb =
     dbUrl.includes(TEST_PROJECT_REF) ||
-    dbUrl.includes('test') ||
-    dbUrl.includes('staging') ||
-    dbUrl.includes('localhost');
+    dbUrl.includes("test") ||
+    dbUrl.includes("staging") ||
+    dbUrl.includes("localhost");
 
   if (!isTestDb) {
-    console.error('❌ ABORT: DATABASE_URL does not match the test project!');
+    console.error("❌ ABORT: DATABASE_URL does not match the test project!");
     console.error(`   Expected project ref "${TEST_PROJECT_REF}" in the URL.`);
     process.exit(1);
   }
@@ -50,7 +50,7 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   // ─── Step 1: Create Supabase auth users ────────────────────────
-  console.log('👤 Creating test users...');
+  console.log("👤 Creating test users...");
 
   const authIds: Record<string, string> = {};
 
@@ -87,22 +87,22 @@ async function main() {
   }
 
   // ─── Step 2: Create addresses ──────────────────────────────────
-  console.log('\n📍 Creating addresses...');
+  console.log("\n📍 Creating addresses...");
 
   const spAddress = await prisma.address.upsert({
     where: { id: 1 },
     update: {},
     create: {
-      zipCode: '01310100',
-      streetName: 'Avenida Paulista',
-      number: '1000',
-      neighborhood: 'Bela Vista',
-      city: 'São Paulo',
-      state: 'SP',
-      country: 'Brazil',
+      zipCode: "01310100",
+      streetName: "Avenida Paulista",
+      number: "1000",
+      neighborhood: "Bela Vista",
+      city: "São Paulo",
+      state: "SP",
+      country: "Brazil",
       latitude: -23.5614,
       longitude: -46.6558,
-      status: 'ACTIVE',
+      status: "ACTIVE",
     },
   });
 
@@ -110,84 +110,98 @@ async function main() {
     where: { id: 2 },
     update: {},
     create: {
-      zipCode: '04543011',
-      streetName: 'Rua Funchal',
-      number: '500',
-      neighborhood: 'Vila Olímpia',
-      city: 'São Paulo',
-      state: 'SP',
-      country: 'Brazil',
+      zipCode: "04543011",
+      streetName: "Rua Funchal",
+      number: "500",
+      neighborhood: "Vila Olímpia",
+      city: "São Paulo",
+      state: "SP",
+      country: "Brazil",
       latitude: -23.5939,
       longitude: -46.6861,
-      status: 'ACTIVE',
+      status: "ACTIVE",
     },
   });
 
-  console.log(`  ✅ Addresses created (ids: ${spAddress.id}, ${spAddress2.id})`);
+  console.log(
+    `  ✅ Addresses created (ids: ${spAddress.id}, ${spAddress2.id})`,
+  );
 
   // ─── Step 3: Create Prisma records ─────────────────────────────
-  console.log('\n👨‍👩‍👧 Creating Prisma records...');
+  console.log("\n👨‍👩‍👧 Creating Prisma records...");
 
   // --- Nannies ---
   const nannyData = {
     nanny: {
-      slug: 'ana-test-nanny',
-      plan: 'NANNY_FREE' as const,
+      slug: "ana-test-nanny",
+      plan: "NANNY_FREE" as const,
       addressId: spAddress.id,
       extra: {
-        birthDate: new Date('1995-03-15'),
-        gender: 'FEMALE' as const,
+        birthDate: new Date("1995-03-15"),
+        gender: "FEMALE" as const,
         experienceYears: 5,
-        aboutMe: 'Olá! Sou a Ana, babá dedicada com 5 anos de experiência.',
+        aboutMe: "Olá! Sou a Ana, babá dedicada com 5 anos de experiência.",
         isProfilePublic: true,
         hourlyRate: 35,
         dailyRate: 200,
         monthlyRate: 3000,
         maxChildrenCare: 3,
-        maxTravelDistance: 'UP_TO_10KM' as const,
-        nannyTypes: ['FIXED', 'SUBSTITUTE'],
-        contractRegimes: ['CLT', 'MEI'],
-        hourlyRateRange: 'FROM_31_TO_40',
-        ageRangesExperience: ['NEWBORN', 'BABY', 'TODDLER'],
-        strengths: ['PATIENT', 'CREATIVE', 'ORGANIZED'],
-        acceptedActivities: ['COOK_MEALS', 'HELP_HOMEWORK', 'LIGHT_CLEANING'],
-        certifications: ['FIRST_AID'],
-        languages: ['PORTUGUESE_NATIVE'],
-        careMethodology: 'MONTESSORI',
-        comfortableWithPets: 'YES_ANY' as const,
-        parentPresencePreference: 'NO_PREFERENCE' as const,
-        acceptsHolidayWork: 'YES' as const,
+        maxTravelDistance: "UP_TO_10KM" as const,
+        nannyTypes: ["FIXED", "SUBSTITUTE"],
+        contractRegimes: ["CLT", "MEI"],
+        hourlyRateRange: "FROM_31_TO_40",
+        ageRangesExperience: ["NEWBORN", "BABY", "TODDLER"],
+        strengths: ["PATIENT", "CREATIVE", "ORGANIZED"],
+        acceptedActivities: ["COOK_MEALS", "HELP_HOMEWORK", "LIGHT_CLEANING"],
+        certifications: ["FIRST_AID"],
+        languages: ["PORTUGUESE_NATIVE"],
+        careMethodology: "MONTESSORI",
+        comfortableWithPets: "YES_ANY" as const,
+        parentPresencePreference: "NO_PREFERENCE" as const,
+        acceptsHolidayWork: "YES" as const,
       },
     },
     nannyPro: {
-      slug: 'maria-test-nannypro',
-      plan: 'NANNY_PRO' as const,
+      slug: "maria-test-nannypro",
+      plan: "NANNY_PRO" as const,
       addressId: spAddress2.id,
       extra: {
-        birthDate: new Date('1990-08-20'),
-        gender: 'FEMALE' as const,
+        birthDate: new Date("1990-08-20"),
+        gender: "FEMALE" as const,
         experienceYears: 10,
-        aboutMe: 'Sou a Maria, babá profissional com mais de 10 anos de experiência.',
+        aboutMe:
+          "Sou a Maria, babá profissional com mais de 10 anos de experiência.",
         isProfilePublic: true,
         hourlyRate: 50,
         dailyRate: 300,
         monthlyRate: 5000,
         maxChildrenCare: 4,
-        maxTravelDistance: 'UP_TO_20KM' as const,
-        nannyTypes: ['FIXED', 'SUBSTITUTE', 'OCCASIONAL'],
-        contractRegimes: ['CLT', 'MEI', 'DAILY_WORKER'],
-        hourlyRateRange: 'FROM_41_TO_50',
-        ageRangesExperience: ['NEWBORN', 'BABY', 'TODDLER', 'PRESCHOOL', 'SCHOOL_AGE'],
-        strengths: ['PATIENT', 'CREATIVE', 'ORGANIZED', 'COMMUNICATIVE'],
-        acceptedActivities: ['COOK_MEALS', 'HELP_HOMEWORK', 'LIGHT_CLEANING', 'TAKE_TO_SCHOOL'],
-        certifications: ['FIRST_AID', 'PEDAGOGY'],
-        languages: ['PORTUGUESE_NATIVE', 'ENGLISH_INTERMEDIATE'],
-        careMethodology: 'MONTESSORI',
-        comfortableWithPets: 'YES_ANY' as const,
-        parentPresencePreference: 'NO_PREFERENCE' as const,
-        acceptsHolidayWork: 'SOMETIMES' as const,
+        maxTravelDistance: "UP_TO_20KM" as const,
+        nannyTypes: ["FIXED", "SUBSTITUTE", "OCCASIONAL"],
+        contractRegimes: ["CLT", "MEI", "DAILY_WORKER"],
+        hourlyRateRange: "FROM_41_TO_50",
+        ageRangesExperience: [
+          "NEWBORN",
+          "BABY",
+          "TODDLER",
+          "PRESCHOOL",
+          "SCHOOL_AGE",
+        ],
+        strengths: ["PATIENT", "CREATIVE", "ORGANIZED", "COMMUNICATIVE"],
+        acceptedActivities: [
+          "COOK_MEALS",
+          "HELP_HOMEWORK",
+          "LIGHT_CLEANING",
+          "TAKE_TO_SCHOOL",
+        ],
+        certifications: ["FIRST_AID", "PEDAGOGY"],
+        languages: ["PORTUGUESE_NATIVE", "ENGLISH_INTERMEDIATE"],
+        careMethodology: "MONTESSORI",
+        comfortableWithPets: "YES_ANY" as const,
+        parentPresencePreference: "NO_PREFERENCE" as const,
+        acceptsHolidayWork: "SOMETIMES" as const,
         hasSpecialNeedsExperience: true,
-        specialNeedsExperienceDescription: 'Experiência com crianças com TEA.',
+        specialNeedsExperienceDescription: "Experiência com crianças com TEA.",
         documentValidated: true,
         documentValidationDate: new Date(),
       },
@@ -222,7 +236,7 @@ async function main() {
           authId,
           emailAddress: user.email,
           name: user.name,
-          status: 'ACTIVE',
+          status: "ACTIVE",
           onboardingCompleted: true,
           slug: config.slug,
           addressId: config.addressId,
@@ -234,8 +248,8 @@ async function main() {
         data: {
           nannyId: nanny.id,
           plan: config.plan,
-          status: 'ACTIVE',
-          billingInterval: 'MONTH',
+          status: "ACTIVE",
+          billingInterval: "MONTH",
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
@@ -256,24 +270,59 @@ async function main() {
       await prisma.nannyAvailability.create({
         data: {
           nannyId: record.id,
-          jobTypes: ['FIXED', 'SUBSTITUTE'],
+          jobTypes: ["FIXED", "SUBSTITUTE"],
           schedule: {
-            monday: { morning: true, afternoon: true, evening: false, overnight: false },
-            tuesday: { morning: true, afternoon: true, evening: false, overnight: false },
-            wednesday: { morning: true, afternoon: true, evening: true, overnight: false },
-            thursday: { morning: true, afternoon: true, evening: false, overnight: false },
-            friday: { morning: true, afternoon: true, evening: false, overnight: false },
-            saturday: { morning: false, afternoon: false, evening: false, overnight: false },
-            sunday: { morning: false, afternoon: false, evening: false, overnight: false },
+            monday: {
+              morning: true,
+              afternoon: true,
+              evening: false,
+              overnight: false,
+            },
+            tuesday: {
+              morning: true,
+              afternoon: true,
+              evening: false,
+              overnight: false,
+            },
+            wednesday: {
+              morning: true,
+              afternoon: true,
+              evening: true,
+              overnight: false,
+            },
+            thursday: {
+              morning: true,
+              afternoon: true,
+              evening: false,
+              overnight: false,
+            },
+            friday: {
+              morning: true,
+              afternoon: true,
+              evening: false,
+              overnight: false,
+            },
+            saturday: {
+              morning: false,
+              afternoon: false,
+              evening: false,
+              overnight: false,
+            },
+            sunday: {
+              morning: false,
+              afternoon: false,
+              evening: false,
+              overnight: false,
+            },
           },
-          schedulePreference: 'FLEXIBLE',
-          acceptsOvernight: key === 'nannyPro' ? 'OCCASIONALLY' : 'NO',
+          schedulePreference: "FLEXIBLE",
+          acceptsOvernight: key === "nannyPro" ? "OCCASIONALLY" : "NO",
           availableFrom: new Date(),
-          monthlyRate: key === 'nannyPro' ? 5000 : 3000,
-          hourlyRate: key === 'nannyPro' ? 50 : 35,
-          dailyRate: key === 'nannyPro' ? 300 : 200,
-          preferredContractTypes: ['CLT', 'MEI'],
-          allowsMultipleJobs: 'YES',
+          monthlyRate: key === "nannyPro" ? 5000 : 3000,
+          hourlyRate: key === "nannyPro" ? 50 : 35,
+          dailyRate: key === "nannyPro" ? 300 : 200,
+          preferredContractTypes: ["CLT", "MEI"],
+          allowsMultipleJobs: "YES",
         },
       });
       console.log(`  ✅ ${key}: Created availability`);
@@ -285,7 +334,7 @@ async function main() {
   // --- Families ---
   const familyRecords: Record<string, { id: number }> = {};
 
-  for (const key of ['family', 'familyPaid'] as const) {
+  for (const key of ["family", "familyPaid"] as const) {
     const authId = authIds[key];
     if (!authId) continue;
 
@@ -305,24 +354,24 @@ async function main() {
           authId,
           emailAddress: user.email,
           name: user.name,
-          status: 'ACTIVE',
+          status: "ACTIVE",
           onboardingCompleted: true,
           addressId: spAddress.id,
           numberOfChildren: 2,
-          housingType: 'APARTMENT_WITH_ELEVATOR',
+          housingType: "APARTMENT_WITH_ELEVATOR",
           hasPets: false,
-          nannyType: 'MENSALISTA',
-          contractRegime: 'CLT',
+          nannyType: "MENSALISTA",
+          contractRegime: "CLT",
         },
       });
 
-      const plan = key === 'familyPaid' ? 'FAMILY_PLUS' : 'FAMILY_FREE';
+      const plan = key === "familyPaid" ? "FAMILY_PLUS" : "FAMILY_FREE";
       await prisma.subscription.create({
         data: {
           familyId: family.id,
           plan,
-          status: 'ACTIVE',
-          billingInterval: 'MONTH',
+          status: "ACTIVE",
+          billingInterval: "MONTH",
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
@@ -334,7 +383,7 @@ async function main() {
   }
 
   // ─── Step 4: Create children for families ──────────────────────
-  console.log('\n👶 Creating children...');
+  console.log("\n👶 Creating children...");
 
   for (const [key, familyRecord] of Object.entries(familyRecords)) {
     const existingChildren = await prisma.childFamily.findMany({
@@ -344,26 +393,36 @@ async function main() {
     if (existingChildren.length === 0) {
       const child1 = await prisma.child.create({
         data: {
-          name: 'Lucas',
-          birthDate: new Date('2022-06-15'),
-          gender: 'MALE',
-          status: 'ACTIVE',
+          name: "Lucas",
+          birthDate: new Date("2022-06-15"),
+          gender: "MALE",
+          status: "ACTIVE",
         },
       });
 
       const child2 = await prisma.child.create({
         data: {
-          name: 'Sofia',
-          birthDate: new Date('2020-01-10'),
-          gender: 'FEMALE',
-          status: 'ACTIVE',
+          name: "Sofia",
+          birthDate: new Date("2020-01-10"),
+          gender: "FEMALE",
+          status: "ACTIVE",
         },
       });
 
       await prisma.childFamily.createMany({
         data: [
-          { childId: child1.id, familyId: familyRecord.id, relationshipType: 'PARENT', isMain: true },
-          { childId: child2.id, familyId: familyRecord.id, relationshipType: 'PARENT', isMain: false },
+          {
+            childId: child1.id,
+            familyId: familyRecord.id,
+            relationshipType: "PARENT",
+            isMain: true,
+          },
+          {
+            childId: child2.id,
+            familyId: familyRecord.id,
+            relationshipType: "PARENT",
+            isMain: false,
+          },
         ],
       });
 
@@ -374,12 +433,12 @@ async function main() {
   }
 
   // ─── Step 5: Create a job from familyPaid ──────────────────────
-  console.log('\n📋 Creating test job...');
+  console.log("\n📋 Creating test job...");
 
   const familyPaid = familyRecords.familyPaid;
   if (familyPaid) {
     const existingJob = await prisma.job.findFirst({
-      where: { familyId: familyPaid.id, status: 'ACTIVE' },
+      where: { familyId: familyPaid.id, status: "ACTIVE" },
     });
 
     if (!existingJob) {
@@ -392,44 +451,44 @@ async function main() {
       await prisma.job.create({
         data: {
           familyId: familyPaid.id,
-          title: 'Babá fixa para 2 crianças em São Paulo',
+          title: "Babá fixa para 2 crianças em São Paulo",
           description:
-            'Procuramos uma babá fixa e carinhosa para cuidar de duas crianças (2 e 4 anos) no período da manhã. A babá deve ter experiência com crianças pequenas.',
-          jobType: 'FIXED',
+            "Procuramos uma babá fixa e carinhosa para cuidar de duas crianças (2 e 4 anos) no período da manhã. A babá deve ter experiência com crianças pequenas.",
+          jobType: "FIXED",
           schedule: {
-            monday: { enabled: true, startTime: '08:00', endTime: '17:00' },
-            tuesday: { enabled: true, startTime: '08:00', endTime: '17:00' },
-            wednesday: { enabled: true, startTime: '08:00', endTime: '17:00' },
-            thursday: { enabled: true, startTime: '08:00', endTime: '17:00' },
-            friday: { enabled: true, startTime: '08:00', endTime: '17:00' },
+            monday: { enabled: true, startTime: "08:00", endTime: "17:00" },
+            tuesday: { enabled: true, startTime: "08:00", endTime: "17:00" },
+            wednesday: { enabled: true, startTime: "08:00", endTime: "17:00" },
+            thursday: { enabled: true, startTime: "08:00", endTime: "17:00" },
+            friday: { enabled: true, startTime: "08:00", endTime: "17:00" },
             saturday: { enabled: false },
             sunday: { enabled: false },
           },
-          requiresOvernight: 'NO',
-          contractType: 'CLT',
-          paymentType: 'MONTHLY',
+          requiresOvernight: "NO",
+          contractType: "CLT",
+          paymentType: "MONTHLY",
           budgetMin: 3000,
           budgetMax: 4500,
           childrenIds: familyChildren.map((c) => c.childId),
-          mandatoryRequirements: ['FIRST_AID'],
+          mandatoryRequirements: ["FIRST_AID"],
           startDate: new Date(),
-          status: 'ACTIVE',
+          status: "ACTIVE",
         },
       });
 
-      console.log('  ✅ Created test job from familyPaid');
+      console.log("  ✅ Created test job from familyPaid");
     } else {
       console.log(`  ⏭️  Job already exists (id: ${existingJob.id})`);
     }
   }
 
   // ─── Step 6: Create job application from nannyPro ──────────────
-  console.log('\n📝 Creating test job application...');
+  console.log("\n📝 Creating test job application...");
 
   const nannyPro = nannyRecords.nannyPro;
   if (familyPaid && nannyPro) {
     const job = await prisma.job.findFirst({
-      where: { familyId: familyPaid.id, status: 'ACTIVE' },
+      where: { familyId: familyPaid.id, status: "ACTIVE" },
     });
 
     if (job) {
@@ -442,25 +501,25 @@ async function main() {
           data: {
             jobId: job.id,
             nannyId: nannyPro.id,
-            status: 'PENDING',
+            status: "PENDING",
             matchScore: 85,
             message:
-              'Olá! Tenho muita experiência com crianças pequenas e adoraria cuidar dos seus filhos.',
+              "Olá! Tenho muita experiência com crianças pequenas e adoraria cuidar dos seus filhos.",
           },
         });
-        console.log('  ✅ Created job application from nannyPro');
+        console.log("  ✅ Created job application from nannyPro");
       } else {
-        console.log('  ⏭️  Job application already exists');
+        console.log("  ⏭️  Job application already exists");
       }
     }
   }
 
   // ─── Step 7: Create a conversation ─────────────────────────────
-  console.log('\n💬 Creating test conversation...');
+  console.log("\n💬 Creating test conversation...");
 
   if (familyPaid && nannyPro) {
     const job = await prisma.job.findFirst({
-      where: { familyId: familyPaid.id, status: 'ACTIVE' },
+      where: { familyId: familyPaid.id, status: "ACTIVE" },
     });
 
     const existingConversation = await prisma.participant.findFirst({
@@ -476,24 +535,21 @@ async function main() {
       const conversation = await prisma.conversation.create({
         data: {
           jobId: job?.id,
-          lastMessagePreview: 'Olá! Vi que você se candidatou à vaga.',
+          lastMessagePreview: "Olá! Vi que você se candidatou à vaga.",
           lastMessageAt: new Date(),
           participants: {
-            create: [
-              { familyId: familyPaid.id },
-              { nannyId: nannyPro.id },
-            ],
+            create: [{ familyId: familyPaid.id }, { nannyId: nannyPro.id }],
           },
           messages: {
             create: [
               {
                 senderFamilyId: familyPaid.id,
-                body: 'Olá! Vi que você se candidatou à vaga. Podemos conversar?',
+                body: "Olá! Vi que você se candidatou à vaga. Podemos conversar?",
                 seq: 1,
               },
               {
                 senderNannyId: nannyPro.id,
-                body: 'Olá! Claro, estou disponível para conversar. Quando seria melhor?',
+                body: "Olá! Claro, estou disponível para conversar. Quando seria melhor?",
                 seq: 2,
               },
             ],
@@ -501,110 +557,128 @@ async function main() {
         },
       });
 
-      console.log(`  ✅ Created conversation (${conversation.id}) with 2 messages`);
+      console.log(
+        `  ✅ Created conversation (${conversation.id}) with 2 messages`,
+      );
     } else {
-      console.log('  ⏭️  Conversation already exists');
+      console.log("  ⏭️  Conversation already exists");
     }
   }
 
   // ─── Step 8: Create test coupons ──────────────────────────────
-  console.log('\n🏷️  Creating test coupons...');
+  console.log("\n🏷️  Creating test coupons...");
 
   const now = new Date();
-  const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-  const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
-  const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-  const twoYearsFromNow = new Date(now.getFullYear() + 2, now.getMonth(), now.getDate());
+  const oneYearAgo = new Date(
+    now.getFullYear() - 1,
+    now.getMonth(),
+    now.getDate(),
+  );
+  const twoYearsAgo = new Date(
+    now.getFullYear() - 2,
+    now.getMonth(),
+    now.getDate(),
+  );
+  const oneYearFromNow = new Date(
+    now.getFullYear() + 1,
+    now.getMonth(),
+    now.getDate(),
+  );
+  const twoYearsFromNow = new Date(
+    now.getFullYear() + 2,
+    now.getMonth(),
+    now.getDate(),
+  );
 
   const testCoupons = [
     {
-      code: 'TESTE20',
-      discountType: 'PERCENTAGE' as const,
+      code: "TESTE20",
+      discountType: "PERCENTAGE" as const,
       discountValue: 20,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'TESTE50CAP',
-      discountType: 'PERCENTAGE' as const,
+      code: "TESTE50CAP",
+      discountType: "PERCENTAGE" as const,
       discountValue: 50,
       maxDiscount: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'FIXO15',
-      discountType: 'FIXED' as const,
+      code: "FIXO15",
+      discountType: "FIXED" as const,
       discountValue: 15,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'FIXO999',
-      discountType: 'FIXED' as const,
+      code: "FIXO999",
+      discountType: "FIXED" as const,
       discountValue: 999,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'TRIAL7',
-      discountType: 'FREE_TRIAL_DAYS' as const,
+      code: "TRIAL7",
+      discountType: "FREE_TRIAL_DAYS" as const,
       discountValue: 7,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'TRIAL90NOCARD',
-      discountType: 'FREE_TRIAL_DAYS' as const,
+      code: "TRIAL90NOCARD",
+      discountType: "FREE_TRIAL_DAYS" as const,
       discountValue: 90,
-      applicableTo: 'NANNIES' as const,
+      applicableTo: "NANNIES" as const,
       requiresCreditCard: false,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'INATIVO',
-      discountType: 'PERCENTAGE' as const,
+      code: "INATIVO",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: false,
     },
     {
-      code: 'EXPIRADO',
-      discountType: 'PERCENTAGE' as const,
+      code: "EXPIRADO",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: twoYearsAgo,
       endDate: oneYearAgo,
       isActive: true,
     },
     {
-      code: 'FUTURO',
-      discountType: 'PERCENTAGE' as const,
+      code: "FUTURO",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearFromNow,
       endDate: twoYearsFromNow,
       isActive: true,
     },
     {
-      code: 'LIMITADO',
-      discountType: 'PERCENTAGE' as const,
+      code: "LIMITADO",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
@@ -612,48 +686,48 @@ async function main() {
       usageCount: 1,
     },
     {
-      code: 'FAMILIA10',
-      discountType: 'PERCENTAGE' as const,
+      code: "FAMILIA10",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'FAMILIES' as const,
+      applicableTo: "FAMILIES" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'BABA10',
-      discountType: 'PERCENTAGE' as const,
+      code: "BABA10",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'NANNIES' as const,
+      applicableTo: "NANNIES" as const,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'PLUSONLY',
-      discountType: 'PERCENTAGE' as const,
+      code: "PLUSONLY",
+      discountType: "PERCENTAGE" as const,
       discountValue: 15,
-      applicableTo: 'SPECIFIC_PLAN' as const,
-      applicablePlanIds: ['FAMILY_PLUS'],
+      applicableTo: "SPECIFIC_PLAN" as const,
+      applicablePlanIds: ["FAMILY_PLUS"],
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'MIN100',
-      discountType: 'PERCENTAGE' as const,
+      code: "MIN100",
+      discountType: "PERCENTAGE" as const,
       discountValue: 10,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       minPurchaseAmount: 100,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
       isActive: true,
     },
     {
-      code: 'EXCLUSIVO',
-      discountType: 'PERCENTAGE' as const,
+      code: "EXCLUSIVO",
+      discountType: "PERCENTAGE" as const,
       discountValue: 25,
-      applicableTo: 'ALL' as const,
+      applicableTo: "ALL" as const,
       hasUserRestriction: true,
       startDate: oneYearAgo,
       endDate: oneYearFromNow,
@@ -678,11 +752,11 @@ async function main() {
 
   // Create allowed email for EXCLUSIVO coupon
   const exclusivoCoupon = await prisma.coupon.findUnique({
-    where: { code: 'EXCLUSIVO' },
+    where: { code: "EXCLUSIVO" },
   });
 
   if (exclusivoCoupon) {
-    const allowedEmail = 'familia-teste@cuidly.com';
+    const allowedEmail = "familia-teste@cuidly.com";
     await prisma.couponAllowedEmail.upsert({
       where: {
         couponId_email: {
@@ -700,29 +774,29 @@ async function main() {
   }
 
   // ─── Step 9: Create SystemConfig for trigger trials ──────────
-  console.log('\n⚙️  Creating SystemConfig entries...');
+  console.log("\n⚙️  Creating SystemConfig entries...");
 
   const systemConfigs = [
     {
-      key: 'trigger_trial_enabled',
-      value: 'true',
-      type: 'boolean',
-      label: 'Trigger Trial Habilitado',
-      description: 'Liga/desliga o sistema de trigger trials',
+      key: "trigger_trial_enabled",
+      value: "true",
+      type: "boolean",
+      label: "Trigger Trial Habilitado",
+      description: "Liga/desliga o sistema de trigger trials",
     },
     {
-      key: 'trigger_trial_family_days',
-      value: '7',
-      type: 'number',
-      label: 'Dias de Trial (Família)',
-      description: 'Duração do trigger trial para famílias',
+      key: "trigger_trial_family_days",
+      value: "7",
+      type: "number",
+      label: "Dias de Trial (Família)",
+      description: "Duração do trigger trial para famílias",
     },
     {
-      key: 'trigger_trial_nanny_days',
-      value: '7',
-      type: 'number',
-      label: 'Dias de Trial (Babá)',
-      description: 'Duração do trigger trial para babás',
+      key: "trigger_trial_nanny_days",
+      value: "7",
+      type: "number",
+      label: "Dias de Trial (Babá)",
+      description: "Duração do trigger trial para babás",
     },
   ];
 
@@ -736,7 +810,7 @@ async function main() {
   }
 
   await prisma.$disconnect();
-  console.log('\n✅ Test data setup complete.');
+  console.log("\n✅ Test data setup complete.");
 }
 
 main();

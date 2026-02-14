@@ -18,8 +18,8 @@ import { createClient } from '@/utils/supabase/client';
 
 import { FlowNavigation } from './FlowNavigation';
 import { FlowProgress } from './FlowProgress';
-import { useOnboardingBack } from './OnboardingBackContext';
 import { FlowTransition } from './FlowTransition';
+import { useOnboardingBack } from './OnboardingBackContext';
 import { QuestionCard } from './QuestionCard';
 import { QuestionRenderer } from './questions/QuestionRenderer';
 
@@ -272,7 +272,7 @@ export function NannyQuestionFlow({
         secureStorage.removeItem(GENERATED_MINI_BIO_KEY);
         router.push('/app/onboarding/nanny/complete');
       } else if (dest === 'exit') {
-        // Go back to type selection — delete current record so user can re-choose
+        // Go back to type selection - delete current record so user can re-choose
         try {
           await fetch('/api/auth/switch-type', { method: 'POST' });
         } catch {

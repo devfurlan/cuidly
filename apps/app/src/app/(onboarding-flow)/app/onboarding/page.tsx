@@ -81,7 +81,7 @@ export default function OnboardingPage() {
           return;
         }
 
-        // UNTYPED — show type selection inline
+        // UNTYPED - show type selection inline
         setAuthData({
           id: user.id,
           email: user.email || '',

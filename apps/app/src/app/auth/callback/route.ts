@@ -5,10 +5,10 @@
  * New architecture: No User table. Records are stored directly in Nanny or Family.
  */
 
-import { createClient } from '@/utils/supabase/server';
 import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}/app/onboarding`);
       }
 
-      // New user without a type — redirect to onboarding (type selection)
+      // New user without a type - redirect to onboarding (type selection)
       return NextResponse.redirect(`${origin}/app/onboarding`);
     }
   }

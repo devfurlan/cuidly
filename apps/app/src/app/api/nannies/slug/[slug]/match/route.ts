@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
+import prisma from '@/lib/prisma';
 import {
   calculateMatchScore,
-  type NannyProfile,
-  type JobData,
-  type FamilyData,
   type ChildData,
+  type FamilyData,
+  type JobData,
   type MatchResult,
+  type NannyProfile,
 } from '@/services/matching';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * Match Score API for Family viewing a Nanny profile
@@ -20,7 +20,7 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { slug } = await params;
@@ -28,7 +28,10 @@ export async function GET(
     const jobIdParam = searchParams.get('jobId');
 
     if (!slug) {
-      return NextResponse.json({ error: 'Slug é obrigatório' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Slug é obrigatório' },
+        { status: 400 },
+      );
     }
 
     // Authenticate user
@@ -42,7 +45,7 @@ export async function GET(
     if (currentUser.type !== 'family') {
       return NextResponse.json(
         { error: 'Apenas famílias podem ver a pontuação de match' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -60,14 +63,19 @@ export async function GET(
     });
 
     if (!family) {
-      return NextResponse.json({ error: 'Família não encontrada' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Família não encontrada' },
+        { status: 404 },
+      );
     }
 
     // Check if family has active PAID subscription (not FREE plan)
-    const hasActiveSubscription = currentUser.family.subscription?.status === 'ACTIVE' &&
+    const hasActiveSubscription =
+      currentUser.family.subscription?.status === 'ACTIVE' &&
       currentUser.family.subscription.plan !== 'FAMILY_FREE' &&
       (!currentUser.family.subscription.currentPeriodEnd ||
-       new Date(currentUser.family.subscription.currentPeriodEnd) > new Date());
+        new Date(currentUser.family.subscription.currentPeriodEnd) >
+          new Date());
 
     // Check if family has completed onboarding with minimum required data
     if (!family.nannyType || !family.contractRegime) {
@@ -76,7 +84,7 @@ export async function GET(
           error: 'Complete seu perfil para ver o match',
           code: 'INCOMPLETE_PROFILE',
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,18 +102,26 @@ export async function GET(
     });
 
     if (!nanny) {
-      return NextResponse.json({ error: 'Babá não encontrada' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Babá não encontrada' },
+        { status: 404 },
+      );
     }
 
     // Parse availability slots from nanny schedule if exists
     let nannyAvailabilitySlots: string[] | null = null;
     if (nanny.availability?.schedule) {
-      const schedule = nanny.availability.schedule as Record<string, { enabled: boolean; periods?: string[] }>;
+      const schedule = nanny.availability.schedule as Record<
+        string,
+        { enabled: boolean; periods?: string[] }
+      >;
       nannyAvailabilitySlots = [];
       for (const [day, data] of Object.entries(schedule)) {
         if (data.enabled && data.periods) {
           for (const period of data.periods) {
-            nannyAvailabilitySlots.push(`${day.toUpperCase()}_${period.toUpperCase()}`);
+            nannyAvailabilitySlots.push(
+              `${day.toUpperCase()}_${period.toUpperCase()}`,
+            );
           }
         }
       }
@@ -131,7 +147,8 @@ export async function GET(
       hasCnh: nanny.hasCnh,
       experienceYears: nanny.experienceYears,
       hasSpecialNeedsExperience: nanny.hasSpecialNeedsExperience,
-      specialNeedsExperienceDescription: nanny.specialNeedsExperienceDescription,
+      specialNeedsExperienceDescription:
+        nanny.specialNeedsExperienceDescription,
       certifications: nanny.certifications,
       ageRangesExperience: nanny.ageRangesExperience,
       maxTravelDistance: nanny.maxTravelDistance,
@@ -147,19 +164,25 @@ export async function GET(
       criminalBackgroundValidated: nanny.criminalBackgroundValidated,
       averageRating: reviewStats._avg.overallRating,
       reviewCount: reviewStats._count.id,
-      lastActiveAt: (nanny as { lastActiveAt?: Date | null }).lastActiveAt ?? null,
-      address: nanny.address ? {
-        latitude: nanny.address.latitude,
-        longitude: nanny.address.longitude,
-      } : null,
+      lastActiveAt:
+        (nanny as { lastActiveAt?: Date | null }).lastActiveAt ?? null,
+      address: nanny.address
+        ? {
+            latitude: nanny.address.latitude,
+            longitude: nanny.address.longitude,
+          }
+        : null,
       availabilitySlots: nannyAvailabilitySlots,
     };
 
     // Build availability slots from family neededDays and neededShifts
     let familyAvailabilitySlots: string[] | null = null;
     if (family.neededDays && family.neededShifts) {
-      familyAvailabilitySlots = (family.neededDays as string[]).flatMap((day: string) =>
-        (family.neededShifts as string[]).map((shift: string) => `${day}_${shift}`)
+      familyAvailabilitySlots = (family.neededDays as string[]).flatMap(
+        (day: string) =>
+          (family.neededShifts as string[]).map(
+            (shift: string) => `${day}_${shift}`,
+          ),
       );
     }
 
@@ -173,14 +196,16 @@ export async function GET(
       hourlyRateRange: family.hourlyRateRange,
       domesticHelpExpected: family.domesticHelpExpected,
       availabilitySlots: familyAvailabilitySlots,
-      address: family.address ? {
-        latitude: family.address.latitude,
-        longitude: family.address.longitude,
-      } : null,
+      address: family.address
+        ? {
+            latitude: family.address.latitude,
+            longitude: family.address.longitude,
+          }
+        : null,
     };
 
     // Prepare children data for matching
-    const allChildrenData: ChildData[] = family.children.map(cf => ({
+    const allChildrenData: ChildData[] = family.children.map((cf) => ({
       id: cf.child.id,
       birthDate: cf.child.birthDate,
       expectedBirthDate: cf.child.expectedBirthDate,
@@ -204,13 +229,15 @@ export async function GET(
           mandatoryRequirements: job.mandatoryRequirements,
           childrenIds: job.childrenIds,
         };
-        childrenData = allChildrenData.filter(c => job.childrenIds.includes(c.id));
+        childrenData = allChildrenData.filter((c) =>
+          job.childrenIds.includes(c.id),
+        );
       } else {
-        // Job not found or doesn't belong to family — fall back to profile
+        // Job not found or doesn't belong to family - fall back to profile
         jobData = {
           id: 0,
           mandatoryRequirements: [],
-          childrenIds: allChildrenData.map(c => c.id),
+          childrenIds: allChildrenData.map((c) => c.id),
         };
         childrenData = allChildrenData;
       }
@@ -218,7 +245,7 @@ export async function GET(
       jobData = {
         id: 0,
         mandatoryRequirements: [],
-        childrenIds: allChildrenData.map(c => c.id),
+        childrenIds: allChildrenData.map((c) => c.id),
       };
       childrenData = allChildrenData;
     }
@@ -228,7 +255,7 @@ export async function GET(
       jobData,
       familyData,
       childrenData,
-      nannyProfile
+      nannyProfile,
     );
 
     return NextResponse.json({
@@ -245,7 +272,7 @@ export async function GET(
     console.error('Error calculating match score:', error);
     return NextResponse.json(
       { error: 'Erro interno do servidor' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

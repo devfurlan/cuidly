@@ -53,7 +53,8 @@ export const FAMILY_SECTIONS: FlowSection[] = [
   {
     key: 'familyProfile',
     label: 'Sua família',
-    description: 'Vamos começar com algumas informações sobre você e sua família.',
+    description:
+      'Vamos começar com algumas informações sobre você e sua família.',
     sectionNumber: 1,
   },
   {
@@ -68,7 +69,7 @@ export const FAMILY_SECTIONS: FlowSection[] = [
 // ==========================================
 // PERGUNTAS DO ONBOARDING DE FAMÍLIA (17 perguntas)
 // ==========================================
-// Seção 1 — Sua família (Q1-Q8):
+// Seção 1 - Sua família (Q1-Q8):
 // 1. Nome completo
 // 2. CPF
 // 3. Data de nascimento
@@ -78,7 +79,7 @@ export const FAMILY_SECTIONS: FlowSection[] = [
 // 7. Foto da família (opcional)
 // 8. Apresentação da família (IA, opcional)
 //
-// Seção 2 — Criando sua vaga (Q9-Q17):
+// Seção 2 - Criando sua vaga (Q9-Q17):
 // 9. Disponibilidade (dias + turnos)
 // 10. Tipo de babá
 // 11. Regime de contratação
