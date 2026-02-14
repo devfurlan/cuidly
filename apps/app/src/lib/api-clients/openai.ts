@@ -1,10 +1,12 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+}
 
 export const createAssistant = async (id: string, vaga: string) => {
   console.log('🚀 ~ createAssistant ~ vaga:', vaga);
-  const assistant = await openai.beta.assistants.create({
+  const assistant = await getOpenAI().beta.assistants.create({
     name: `${id} - Assistente Cuidly`,
     instructions: `Você é um assistente de seleção de babás da Cuidly. Você vai conversar com a babá via WhatsApp, verificar se ela tem interesse na vaga, se o perfil dela é aderente a vaga e tirar todas as dúvidas.
 
@@ -54,6 +56,7 @@ export const askGPT = async (
   message: string,
 ): Promise<string> => {
   // aguarda run ativo (se houver)
+  const openai = getOpenAI();
   const lastRun = await openai.beta.threads.runs.list(threadId, { limit: 1 });
 
   if (lastRun.data.length && lastRun.data[0].status !== 'completed') {
