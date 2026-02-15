@@ -113,12 +113,12 @@ export default function PrivacyPolicyPage() {
                 Alphaville Industrial, Barueri/SP - CEP 06454-000
               </li>
               <li>
-                <strong>E-mail geral:</strong>{' '}
+                <strong>Suporte:</strong>{' '}
                 <a
-                  href="mailto:contato@cuidly.com"
+                  href="https://cuidly.com/app/suporte"
                   className="text-fuchsia-600 hover:text-fuchsia-700"
                 >
-                  contato@cuidly.com
+                  cuidly.com/app/suporte
                 </a>
               </li>
               <li>
@@ -781,10 +781,10 @@ export default function PrivacyPolicyPage() {
               <li>
                 <strong>Questões gerais:</strong>{' '}
                 <a
-                  href="mailto:contato@cuidly.com"
+                  href="https://cuidly.com/app/suporte"
                   className="text-fuchsia-600 hover:text-fuchsia-700"
                 >
-                  contato@cuidly.com
+                  cuidly.com/app/suporte
                 </a>
               </li>
               <li>

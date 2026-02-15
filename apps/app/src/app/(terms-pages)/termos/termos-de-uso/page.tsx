@@ -893,12 +893,12 @@ export default function TermsOfUsePage() {
           <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
             <ul className="space-y-2">
               <li>
-                <strong>E-mail:</strong>{' '}
+                <strong>Suporte:</strong>{' '}
                 <a
-                  href="mailto:contato@cuidly.com"
+                  href="https://cuidly.com/app/suporte"
                   className="text-fuchsia-600 hover:text-fuchsia-700"
                 >
-                  contato@cuidly.com
+                  cuidly.com/app/suporte
                 </a>
               </li>
               <li>

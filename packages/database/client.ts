@@ -1,4 +1,4 @@
-export { PrismaClient, Prisma, ModerationAction, NotificationType } from "@prisma/client";
+export { PrismaClient, Prisma, ModerationAction, NotificationType, TicketCategory, TicketStatus, TicketDissatisfactionReason } from "@prisma/client";
 export type {
   Nanny,
   Family,

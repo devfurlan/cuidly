@@ -12,6 +12,7 @@ import {
   PiHouse,
   PiList,
   PiMagnifyingGlass,
+  PiQuestion,
   PiSignOut,
   PiStar,
   PiUser,
@@ -105,6 +106,9 @@ const routeTitles: Record<string, string> = {
   '/app/assinatura': 'Assinatura',
   '/app/avaliacoes': 'Avaliações Pendentes',
   '/app/babas': 'Encontrar Babás',
+  '/app/suporte': 'Suporte',
+  '/app/suporte/novo': 'Novo Chamado',
+  '/app/suporte/chamados': 'Meus Chamados',
 };
 
 interface DashboardLayoutProps {
@@ -406,6 +410,12 @@ export default function DashboardLayout({
                               Configurações
                             </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/app/suporte">
+                              <PiQuestion className="mr-2 size-4" />
+                              Suporte
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={handleLogout}
@@ -505,6 +515,16 @@ export default function DashboardLayout({
                           )}
                         >
                           Configurações
+                        </Link>
+                        <Link
+                          href="/app/suporte"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            'block rounded-md px-3 py-2 text-base font-medium text-gray-600',
+                            colors.mobileHover,
+                          )}
+                        >
+                          Suporte
                         </Link>
                         <button
                           onClick={() => {

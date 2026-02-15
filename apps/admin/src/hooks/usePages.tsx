@@ -21,6 +21,7 @@ import {
   ClipboardTextIcon,
   GearSixIcon,
   FlagIcon,
+  HeadsetIcon,
 } from '@phosphor-icons/react';
 import { PagesProps, SubPagesProps } from '@/@types/pagesMenu';
 import { usePermissions } from '@/contexts/PermissionsContext';
@@ -286,6 +287,32 @@ export function usePages() {
           icon: FlagIcon,
           isActive: isPathnameActual(pathname, '/denuncias'),
           showInMenu: hasPermission('REPORTS'),
+        },
+      ],
+    },
+    {
+      title: 'Suporte',
+      items: [
+        {
+          title: 'Chamados',
+          url: '/suporte',
+          icon: HeadsetIcon,
+          isActive: isPathnameActual(pathname, '/suporte'),
+          showInMenu: hasPermission('SUPPORT'),
+          items: [
+            {
+              title: 'Todos os chamados',
+              url: '/suporte',
+              isActive: isPathnameActual(pathname, '/suporte', true),
+              showInMenu: false,
+            },
+            {
+              title: 'Detalhes do chamado',
+              url: `/suporte/${id}`,
+              isActive: isPathnameActual(pathname, '/suporte'),
+              showInMenu: false,
+            },
+          ],
         },
       ],
     },

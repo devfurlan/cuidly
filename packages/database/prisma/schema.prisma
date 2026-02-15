@@ -27,6 +27,8 @@ model AdminUser {
   moderationLogs ModerationLog[] @relation("ModeratorLogs")
   couponsCreated Coupon[]        @relation("CouponCreator")
   reportActions  Report[]        @relation("ReportActionTaker")
+  ticketsClosed  SupportTicket[]        @relation("TicketCloser")
+  ticketMessages SupportTicketMessage[] @relation("TicketMessageSenderAdmin")
 
   @@index([email])
   @@index([status])
@@ -152,6 +154,8 @@ model Nanny {
   couponAllowedEmails         CouponAllowedEmail[]
   incompleteProfileEmailLogs  IncompleteProfileEmailLog[]
   compatibleJobEmailLogs      CompatibleJobEmailLog[]     @relation("CompatibleJobEmailLogs")
+  supportTickets              SupportTicket[]
+  supportTicketMessages       SupportTicketMessage[]      @relation("TicketMessageSenderNanny")
 
   @@index([authId])
   @@index([status])
@@ -299,6 +303,8 @@ model Family {
   couponUsages        CouponUsage[]
   reportsSubmitted    Report[]             @relation("FamilyReporter")
   couponAllowedEmails CouponAllowedEmail[]
+  supportTickets              SupportTicket[]
+  supportTicketMessages       SupportTicketMessage[]      @relation("TicketMessageSenderFamily")
 
   @@index([authId])
   @@index([status])
@@ -1171,6 +1177,7 @@ enum AdminPermission {
   VALIDATIONS
   CHAT_MODERATION
   REPORTS
+  SUPPORT
 }
 
 enum ProfileActionType {
@@ -1503,4 +1510,77 @@ enum ReportAction {
   DISMISSED
   SUSPENDED
   DELETED
+}
+
+// ============================================
+// SUPPORT TICKET SYSTEM - Chamados de suporte
+// ============================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketDissatisfactionReason {
+  NOT_RESOLVED
+  SLOW_RESPONSE
+  UNCLEAR_RESPONSE
+  OTHER
+}
+
+enum TicketCategory {
+  SUBSCRIPTION_PAYMENT
+  ACCOUNT
+  BUG_TECHNICAL
+  SUGGESTION
+  OTHER
+}
+
+model SupportTicket {
+  id         String         @id @default(cuid())
+  nannyId    Int?           @map("nanny_id")
+  familyId   Int?           @map("family_id")
+  category   TicketCategory
+  subject    String         @db.VarChar(200)
+  status     TicketStatus   @default(OPEN)
+  closedAt              DateTime?                    @map("closed_at")
+  closedById            String?                      @map("closed_by_id") @db.Uuid
+  satisfactionRating    Boolean?                     @map("satisfaction_rating")
+  satisfactionReason    TicketDissatisfactionReason?  @map("satisfaction_reason")
+  satisfactionComment   String?                      @map("satisfaction_comment") @db.Text
+  satisfactionRatedAt   DateTime?                    @map("satisfaction_rated_at")
+  createdAt             DateTime                     @default(now()) @map("created_at")
+  updatedAt             DateTime                     @updatedAt @map("updated_at")
+
+  nanny    Nanny?                 @relation(fields: [nannyId], references: [id], onDelete: Cascade)
+  family   Family?                @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  closedBy AdminUser?             @relation("TicketCloser", fields: [closedById], references: [id], onDelete: SetNull)
+  messages SupportTicketMessage[]
+
+  @@index([nannyId])
+  @@index([familyId])
+  @@index([status])
+  @@index([status, createdAt])
+  @@map("support_tickets")
+}
+
+model SupportTicketMessage {
+  id             String   @id @default(cuid())
+  ticketId       String   @map("ticket_id")
+  senderNannyId  Int?     @map("sender_nanny_id")
+  senderFamilyId Int?     @map("sender_family_id")
+  senderAdminId  String?  @map("sender_admin_id") @db.Uuid
+  body           String   @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderNanny  Nanny?        @relation("TicketMessageSenderNanny", fields: [senderNannyId], references: [id], onDelete: SetNull)
+  senderFamily Family?       @relation("TicketMessageSenderFamily", fields: [senderFamilyId], references: [id], onDelete: SetNull)
+  senderAdmin  AdminUser?    @relation("TicketMessageSenderAdmin", fields: [senderAdminId], references: [id], onDelete: SetNull)
+
+  @@index([ticketId])
+  @@index([createdAt])
+  @@map("support_ticket_messages")
 }

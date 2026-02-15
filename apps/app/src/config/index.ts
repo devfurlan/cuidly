@@ -20,9 +20,9 @@ export const config = {
     name: 'Cuidly',
 
     /**
-     * E-mail de contato
+     * URL da página de suporte
      */
-    contactEmail: 'contato@cuidly.com',
+    supportUrl: 'https://cuidly.com/app/suporte',
   },
 
   /**

@@ -12,6 +12,7 @@ export const PERMISSION_LABELS: Record<AdminPermission, string> = {
   VALIDATIONS: 'Validações',
   CHAT_MODERATION: 'Moderação de Chat',
   REPORTS: 'Denúncias',
+  SUPPORT: 'Suporte',
 };
 
 export const PERMISSION_DESCRIPTIONS: Record<AdminPermission, string> = {
@@ -26,6 +27,7 @@ export const PERMISSION_DESCRIPTIONS: Record<AdminPermission, string> = {
   VALIDATIONS: 'Gerenciar solicitações de validação de perfil',
   CHAT_MODERATION: 'Moderar conversas e mensagens do chat',
   REPORTS: 'Gerenciar denúncias de perfis e vagas',
+  SUPPORT: 'Gerenciar chamados de suporte',
 };
 
 export const ALL_PERMISSIONS: AdminPermission[] = [
@@ -40,6 +42,7 @@ export const ALL_PERMISSIONS: AdminPermission[] = [
   'VALIDATIONS',
   'CHAT_MODERATION',
   'REPORTS',
+  'SUPPORT',
 ];
 
 /**
