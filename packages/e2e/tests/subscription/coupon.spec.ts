@@ -673,6 +673,15 @@ test.describe('Coupon: Cardless Trial Checkout UI', () => {
       }),
     );
 
+    // Mock trial eligibility so the "Assinar Pro" button shows instead of trial offer
+    await page.route('**/api/subscription/trial-eligibility', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ eligible: false, reason: 'mocked_for_test' }),
+      }),
+    );
+
     await loginAsNanny(context, page);
     await page.goto('/app/assinatura');
 

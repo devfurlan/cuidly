@@ -98,9 +98,6 @@ test.describe("Subscription: Nanny Upgrade Flow", () => {
     context,
     page,
   }) => {
-    await loginAsNanny(context, page);
-    await page.goto("/app/assinatura");
-
     // Mock pending payments
     await page.route("**/api/payments/pending", (route) =>
       route.fulfill({
@@ -109,6 +106,18 @@ test.describe("Subscription: Nanny Upgrade Flow", () => {
         body: JSON.stringify({ hasPending: false }),
       }),
     );
+
+    // Mock trial eligibility so the "Assinar Pro" button shows instead of trial offer
+    await page.route("**/api/subscription/trial-eligibility", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ eligible: false, reason: "mocked_for_test" }),
+      }),
+    );
+
+    await loginAsNanny(context, page);
+    await page.goto("/app/assinatura");
 
     const upgradeBtn = page.getByRole("button", { name: /Fazer Upgrade/i });
     await expect(upgradeBtn).toBeVisible({ timeout: 15000 });
