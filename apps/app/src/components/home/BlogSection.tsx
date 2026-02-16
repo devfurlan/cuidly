@@ -1,5 +1,5 @@
-import PostImage from '@/app/(public-pages)/blog/_components/PostImage';
-import ReadMoreButton from '@/app/(public-pages)/blog/_components/ReadMoreButton';
+import PostImage from '@/app/(public)/(shell)/blog/_components/PostImage';
+import ReadMoreButton from '@/app/(public)/(shell)/blog/_components/ReadMoreButton';
 import { getLatestPosts } from '@/lib/wordpress';
 import Link from 'next/link';
 import { Fragment } from 'react';

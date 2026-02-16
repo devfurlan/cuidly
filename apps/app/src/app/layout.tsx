@@ -52,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${quicksand.variable} light antialiased`}
+      className={`${inter.variable} ${quicksand.variable} light scroll-smooth antialiased`}
     >
       <head>
         <WebSiteStructuredData />

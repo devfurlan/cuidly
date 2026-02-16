@@ -151,8 +151,8 @@ export default function TermsOfUsePage() {
             2. Descrição do Serviço
           </h2>
           <p className="mt-4">
-            A Cuidly é uma <strong>plataforma que conecta</strong> pessoas que
-            buscam profissionais de cuidado infantil a profissionais da área.
+            A Cuidly é uma <strong>plataforma onde</strong> profissionais de
+            cuidado infantil se cadastram e famílias buscam por esses profissionais.
           </p>
 
           <h3 className="mt-6 text-xl font-semibold text-gray-800">

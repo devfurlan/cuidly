@@ -59,6 +59,42 @@ const emailTemplate = getWelcomeSubscriptionEmailTemplate({
 });
 ```
 
+### Formatação de Texto
+
+**NUNCA** usar o caractere em dash "—" (travessão longo). **SEMPRE** usar " - " (hífen com espaços) no lugar.
+
+- ✅ "Validação completa - antecedentes e certificados"
+- ❌ "Validação completa — antecedentes e certificados"
+
+### Linguagem de Gratuidade
+
+**NUNCA** usar linguagem absoluta de gratuidade. A plataforma tem planos pagos (Plus para famílias, Pro para babás), então qualquer afirmação de que é "tudo grátis" é enganosa.
+
+**Proibido:**
+
+- ❌ "100% grátis"
+- ❌ "Totalmente grátis" / "Tudo isso gratuitamente"
+- ❌ "Sem pagar nada" / "Nunca paga nada"
+- ❌ "Tudo o que você precisa" (em contexto de gratuidade)
+- ❌ Prometer acesso gratuito a features pagas (ex: "Cadastre-se gratuitamente para ter acesso às avaliações completas")
+
+**Permitido:**
+
+- ✅ "Comece grátis" / "Cadastre-se grátis" (o cadastro é de fato gratuito)
+- ✅ "Crie sua conta gratuitamente" (refere-se ao ato do cadastro)
+- ✅ Mencionar features específicas do plano gratuito como grátis
+
+### Identidade da Plataforma
+
+**NUNCA** usar termos como "conectar famílias a babás", "conectamos famílias e babás" ou variações similares.
+
+A Cuidly é **apenas uma plataforma** onde babás se cadastram e famílias buscam por elas. Não há intermediação, não há "conexão" ativa.
+
+- ✅ "Plataforma onde babás se cadastram e famílias buscam por elas"
+- ✅ "Plataforma para famílias encontrarem babás"
+- ❌ "Conectamos famílias a babás qualificadas"
+- ❌ "Plataforma que conecta famílias e babás"
+
 ### Regras de Idioma
 
 #### Código
@@ -435,11 +471,11 @@ const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
 **Arquivo de configuração:** `apps/app/src/lib/seals.ts`
 
-| Selo         | Cor            | Ícone           |
-| ------------ | -------------- | --------------- |
-| IDENTIFICADA | `bg-blue-500`  | `PiStar`        |
-| VERIFICADA   | `bg-green-500` | `PiShieldCheck` |
-| CONFIAVEL    | `bg-amber-500` | `PiMedal`       |
+| Selo         | Cor               | Ícone           |
+| ------------ | ----------------- | --------------- |
+| IDENTIFICADA | `bg-blue-500`     | `PiShieldCheck` |
+| VERIFICADA   | `bg-fuchsia-500`  | `PiShieldCheck` |
+| CONFIAVEL    | `bg-violet-500`   | `PiMedal`       |
 
 **NUNCA** criar cores inline para selos. Use `<SealBadge seal={seal} />`.
 

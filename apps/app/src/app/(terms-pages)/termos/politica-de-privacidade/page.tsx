@@ -380,7 +380,7 @@ export default function PrivacyPolicyPage() {
           </h3>
           <ul className="mt-2 ml-6 list-disc space-y-1">
             <li>Criação e gestão de contas de usuário</li>
-            <li>Conexão entre contratantes e profissionais</li>
+            <li>Busca e contato entre contratantes e profissionais</li>
             <li>Processamento de pagamentos de assinatura</li>
             <li>
               Envio de comunicações transacionais (confirmação de cadastro,

@@ -1,4 +1,4 @@
-import { BlogPost, BlogPosts } from '@/app/(public-pages)/blog/types';
+import { BlogPost, BlogPosts } from '@/app/(public)/(shell)/blog/types';
 import { getApolloClient } from '@/lib/api-clients/apollo';
 import { gql } from '@apollo/client';
 

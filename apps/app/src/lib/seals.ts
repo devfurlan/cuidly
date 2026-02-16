@@ -242,9 +242,9 @@ export function getSealColorClass(seal: NannySeal): string {
     case 'IDENTIFICADA':
       return 'bg-blue-500';
     case 'VERIFICADA':
-      return 'bg-green-500';
+      return 'bg-fuchsia-500';
     case 'CONFIAVEL':
-      return 'bg-amber-500';
+      return 'bg-violet-500';
     default:
       return 'bg-gray-400';
   }

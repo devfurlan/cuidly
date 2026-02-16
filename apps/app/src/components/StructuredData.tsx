@@ -1,4 +1,4 @@
-import { BlogPost } from '@/app/(public-pages)/blog/types';
+import { BlogPost } from '@/app/(public)/(shell)/blog/types';
 import { getExperienceYearsLabel } from '@/helpers/label-getters';
 
 interface ArticleStructuredDataProps {
@@ -174,7 +174,7 @@ export function OrganizationStructuredData() {
     name: 'Cuidly',
     url: 'https://cuidly.com',
     logo: 'https://cuidly.com/static/favicon-512.png',
-    description: 'Plataforma que conecta famílias a babás qualificadas e verificadas no Brasil',
+    description: 'Plataforma onde babás qualificadas e verificadas se cadastram e famílias buscam por elas em todo o Brasil',
     sameAs: [
       'https://www.instagram.com/cuidlybr',
       'https://www.linkedin.com/company/cuidly',
@@ -286,7 +286,7 @@ export function LocalBusinessStructuredData() {
       latitude: '-23.5505',
       longitude: '-46.6333',
     },
-    description: 'Plataforma que conecta famílias a babás qualificadas e verificadas no Brasil',
+    description: 'Plataforma onde babás qualificadas e verificadas se cadastram e famílias buscam por elas em todo o Brasil',
     areaServed: {
       '@type': 'Country',
       name: 'Brasil',

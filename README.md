@@ -1,6 +1,6 @@
 # Cuidly
 
-Plataforma para conectar famílias e babás.
+Plataforma onde babás se cadastram e famílias buscam por elas.
 
 ## Estrutura do Projeto
 

@@ -46,6 +46,9 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm db:generate
 
+      - name: Apply migrations to test database
+        run: pnpm db:migrate:deploy
+
       - name: Install Playwright browsers
         run: pnpm --filter @cuidly/e2e exec playwright install --with-deps chromium
 

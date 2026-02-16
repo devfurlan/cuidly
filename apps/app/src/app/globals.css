@@ -180,6 +180,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  ::selection {
+    @apply bg-fuchsia-500/30 text-fuchsia-950;
+  }
 }
 
 a,

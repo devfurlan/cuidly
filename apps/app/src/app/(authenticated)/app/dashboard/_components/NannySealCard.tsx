@@ -160,9 +160,9 @@ function getSealGradient(
   nextSeal: string | null
 ): string {
   if (seal === 'CONFIAVEL')
-    return 'from-amber-50 to-amber-100 border-amber-200';
+    return 'from-violet-50 to-violet-100 border-violet-200';
   if (seal === 'VERIFICADA' || nextSeal === 'Confiável')
-    return 'from-green-50 to-green-100 border-green-200';
+    return 'from-fuchsia-50 to-fuchsia-100 border-fuchsia-200';
   if (seal === 'IDENTIFICADA' || nextSeal === 'Verificada')
     return 'from-blue-50 to-blue-100 border-blue-200';
   return 'from-purple-50 to-fuchsia-50 border-fuchsia-200';
@@ -172,8 +172,8 @@ function getProgressBarColor(
   seal: NannySeal | null,
   nextSeal: string | null
 ): string {
-  if (seal === 'CONFIAVEL') return 'bg-amber-500';
-  if (seal === 'VERIFICADA' || nextSeal === 'Confiável') return 'bg-green-500';
+  if (seal === 'CONFIAVEL') return 'bg-violet-500';
+  if (seal === 'VERIFICADA' || nextSeal === 'Confiável') return 'bg-fuchsia-500';
   if (seal === 'IDENTIFICADA' || nextSeal === 'Verificada') return 'bg-blue-500';
   return 'bg-fuchsia-500';
 }
@@ -234,22 +234,22 @@ export function NannySealCard({ nanny }: NannySealCardProps) {
     return (
       <Card
         className={cn(
-          'mb-6 border bg-linear-to-r from-amber-50 to-yellow-100 border-amber-300'
+          'mb-6 border bg-linear-to-r from-violet-50 to-blue-50 border-violet-300'
         )}
       >
         <CardContent className="p-6">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
-            <div className="flex size-16 items-center justify-center rounded-full bg-amber-100">
-              <PiTrophy className="size-8 text-amber-600" />
+            <div className="flex size-16 items-center justify-center rounded-full bg-violet-100">
+              <PiTrophy className="size-8 text-violet-600" />
             </div>
             <div className="flex-1">
               <div className="mb-2 flex items-center justify-center gap-3 sm:justify-start">
                 <SealBadge seal={sealResult.seal} variant="default" />
-                <span className="text-lg font-semibold text-amber-800">
+                <span className="text-lg font-semibold text-violet-800">
                   Parabéns!
                 </span>
               </div>
-              <p className="text-sm text-amber-700">
+              <p className="text-sm text-violet-700">
                 Você conquistou o selo máximo! Seu perfil transmite máxima
                 confiança para as famílias.
               </p>
