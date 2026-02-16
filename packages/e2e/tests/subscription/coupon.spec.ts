@@ -422,8 +422,8 @@ test.describe('Coupon: Checkout Form UI', () => {
     await expect(assinarBtn).toBeVisible({ timeout: 10000 });
     await assinarBtn.click();
 
-    // Wait for checkout form to load
-    await expect(page.getByText('Cartão').first()).toBeVisible({
+    // Wait for checkout form to load (use button role to avoid matching "Sem cartão" text)
+    await expect(page.getByRole('button', { name: /Cartão/i })).toBeVisible({
       timeout: 10000,
     });
   }
@@ -680,13 +680,14 @@ test.describe('Coupon: Cardless Trial Checkout UI', () => {
     await expect(upgradeBtn).toBeVisible({ timeout: 15000 });
     await upgradeBtn.click();
 
-    // Click "Assinar Pro" to open checkout
+    // Click "Assinar Pro" to open checkout (wait for modal to settle)
     const assinarBtn = page.getByRole('button', { name: /Assinar Pro/i });
     await expect(assinarBtn).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await assinarBtn.click();
 
-    // Wait for checkout form to load
-    await expect(page.getByText('Cartão').first()).toBeVisible({
+    // Wait for checkout form to load (use button role to avoid matching "Sem cartão" text)
+    await expect(page.getByRole('button', { name: /Cartão/i })).toBeVisible({
       timeout: 10000,
     });
   }
@@ -713,8 +714,8 @@ test.describe('Coupon: Cardless Trial Checkout UI', () => {
     });
 
     // Payment tabs (Cartão/PIX) should be hidden
-    await expect(page.getByText('Cartão').first()).not.toBeVisible();
-    await expect(page.getByText('PIX').first()).not.toBeVisible();
+    await expect(page.getByRole('button', { name: /Cartão/i })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: /PIX/i })).not.toBeVisible();
 
     // Should show trial activation button
     await expect(

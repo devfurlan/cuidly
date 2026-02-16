@@ -116,10 +116,11 @@ test.describe("Subscription: Nanny Upgrade Flow", () => {
 
     const assinarBtn = page.getByRole("button", { name: /Assinar Pro/i });
     await expect(assinarBtn).toBeVisible({ timeout: 10000 });
+    await page.waitForTimeout(500);
     await assinarBtn.click();
 
     // Checkout modal should open - look for payment form elements
-    await expect(page.getByText("Cartão").first()).toBeVisible({
+    await expect(page.getByRole("button", { name: /Cartão/i })).toBeVisible({
       timeout: 10000,
     });
   });

@@ -73,19 +73,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user already has an active subscription
+    // Check if user already has a paid active subscription
     const entityIdField = currentUser.type === 'nanny'
       ? { nannyId: currentUser.nanny.id }
       : { familyId: currentUser.family.id };
 
-    const existingSubscription = await prisma.subscription.findFirst({
+    const existingPaidSubscription = await prisma.subscription.findFirst({
       where: {
         ...entityIdField,
         status: { in: ['ACTIVE', 'TRIALING'] },
+        plan: { notIn: ['NANNY_FREE', 'FAMILY_FREE'] },
       },
     });
 
-    if (existingSubscription) {
+    if (existingPaidSubscription) {
       return NextResponse.json(
         { error: 'Voce ja possui uma assinatura ativa' },
         { status: 400 },
