@@ -1,5 +1,6 @@
 import { PiShieldCheck } from 'react-icons/pi';
 import HeroSearchInput from './HeroSearchInput';
+import Image from 'next/image';
 
 export default function Hero() {
   return (
@@ -73,10 +74,17 @@ export default function Hero() {
           <div className="flex flex-col gap-6 pt-8 sm:flex-row">
             <div className="flex items-center gap-3">
               <div className="flex -space-x-2">
-                <div className="h-10 w-10 rounded-full border-2 border-white bg-linear-to-br from-fuchsia-400 to-pink-400"></div>
-                <div className="h-10 w-10 rounded-full border-2 border-white bg-linear-to-br from-blue-400 to-cyan-400"></div>
-                <div className="h-10 w-10 rounded-full border-2 border-white bg-linear-to-br from-green-400 to-emerald-400"></div>
-                <div className="h-10 w-10 rounded-full border-2 border-white bg-linear-to-br from-orange-400 to-red-400"></div>
+                
+                {[1, 2, 3, 4].map((n) => (
+                  <Image
+                    key={n}
+                    src={`/images/hero/nanny_0${n}.png`}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full border-2 border-white object-cover"
+                  />
+                ))}
               </div>
               <div className="text-left">
                 <p className="font-semibold text-gray-900">Babás</p>

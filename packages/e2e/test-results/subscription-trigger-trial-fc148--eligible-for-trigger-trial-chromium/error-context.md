@@ -1,0 +1,53 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Logo Cuidly" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e4]: Logo Cuidly
+      - img [ref=e5]
+  - main [ref=e14]:
+    - generic [ref=e16]:
+      - heading "Que bom ver você novamente!" [level=1] [ref=e18]
+      - group [ref=e19]:
+        - button "Continuar com Google" [ref=e20] [cursor=pointer]:
+          - img
+          - text: Continuar com Google
+        - button "Continuar com Facebook" [ref=e21] [cursor=pointer]:
+          - img
+          - text: Continuar com Facebook
+      - generic [ref=e23]: ou
+      - group [ref=e24]:
+        - generic [ref=e25]: E-mail
+        - textbox "E-mail" [ref=e26]:
+          - /placeholder: seu@email.com
+      - group [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]: Senha
+          - link "Esqueceu a senha?" [ref=e30] [cursor=pointer]:
+            - /url: /recuperar-senha
+        - generic [ref=e31]:
+          - textbox "Digite sua senha" [ref=e32]
+          - button [ref=e33] [cursor=pointer]:
+            - img [ref=e34]
+      - group [ref=e36]:
+        - button "Entrar" [ref=e37] [cursor=pointer]
+      - group [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]: Não tem uma conta?
+          - link "Criar conta" [ref=e41] [cursor=pointer]:
+            - /url: /cadastro
+        - paragraph [ref=e42]:
+          - text: Ao entrar, você concorda com nossos
+          - link "Termos de Uso" [ref=e43] [cursor=pointer]:
+            - /url: /termos/termos-de-uso
+          - text: e
+          - link "Política de Privacidade" [ref=e44] [cursor=pointer]:
+            - /url: /termos/politica-de-privacidade
+          - text: ", incluindo o uso de cookies."
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e50] [cursor=pointer]:
+    - img [ref=e51]
+  - alert [ref=e54]
+```

@@ -45,7 +45,7 @@ export async function GET() {
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json({ eligible: false, reason: 'not_authenticated' });
+      return NextResponse.json({ eligible: false, reason: 'not_authenticated' }, { status: 401 });
     }
 
     // Check if trigger trials are enabled

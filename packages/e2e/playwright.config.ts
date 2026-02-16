@@ -15,6 +15,9 @@ export default defineConfig({
 
   use: {
     baseURL: 'http://localhost:3300',
+    extraHTTPHeaders: {
+      Origin: 'http://localhost:3300',
+    },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     viewport: { width: 1280, height: 720 },
