@@ -1,5 +1,5 @@
 import { test, expect, type BrowserContext } from '@playwright/test';
-import { loginAsFamily, loginAsNanny } from '../helpers/auth';
+import { loginAsFamily, loginAsNanny, loginAsNannyForTrial } from '../helpers/auth';
 
 const VALIDATE_URL = '/api/coupons/validate';
 
@@ -601,7 +601,8 @@ test.describe('Coupon: Cardless Trial (API)', () => {
     context,
     page,
   }) => {
-    await loginAsNanny(context, page);
+    // Use dedicated trial user to avoid mutating the shared nanny user's subscription state
+    await loginAsNannyForTrial(context, page);
 
     const response = await context.request.post(ACTIVATE_TRIAL_URL, {
       data: {

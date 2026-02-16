@@ -148,3 +148,7 @@ export async function loginAsNanny(context: BrowserContext, page: Page) {
 export async function loginAsNannyPro(context: BrowserContext, page: Page) {
   return login(context, page, "nannyPro");
 }
+
+export async function loginAsNannyForTrial(context: BrowserContext, page: Page) {
+  return login(context, page, "nannyForTrial");
+}

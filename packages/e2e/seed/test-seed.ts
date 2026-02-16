@@ -30,6 +30,12 @@ export const TEST_USERS = {
     name: "Maria Pro",
     type: "NANNY" as const,
   },
+  nannyForTrial: {
+    email: "baba-trial@cuidly.com",
+    password: "TestPass123!",
+    name: "Julia Trial",
+    type: "NANNY" as const,
+  },
 } as const;
 
 export type TestUserKey = keyof typeof TEST_USERS;
